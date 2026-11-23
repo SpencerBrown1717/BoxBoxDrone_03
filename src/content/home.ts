@@ -156,5 +156,5 @@ export const closing = {
   headline: 'Build the future of flight with us.',
   support: 'Drako targets, delivery routes, shows and partnerships. Tell us what you need to fly.',
   cta: 'Talk to us',
-  credentials: ['Based in Palo Alto, California', 'Incubated at Harvard Innovation Labs', 'AI models for drones'],
+  credentials: ['Based in Palo Alto, California', 'AI models for drones'],
 };
