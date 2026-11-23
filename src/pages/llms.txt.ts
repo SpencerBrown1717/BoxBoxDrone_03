@@ -21,7 +21,7 @@ export const GET: APIRoute = () => {
   const body = [
     `# ${site.name} (${site.short})`,
     '',
-    `> ${site.name} builds AI models for drones: a world action model trained for every environment and specialized for last-mile delivery, Drako training targets and drone shows, flying low-cost hardware. Based in ${site.locality}, ${site.region}, and incubated at Harvard Innovation Labs.`,
+    `> ${site.name} builds AI models for drones: a world action model trained for every environment and specialized for last-mile delivery, Drako training targets and drone shows, flying low-cost hardware. Based in ${site.locality}, ${site.region}.`,
     '',
     '## What BBD makes',
     '',
