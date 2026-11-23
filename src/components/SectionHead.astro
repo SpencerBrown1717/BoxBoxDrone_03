@@ -1,0 +1,43 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  intro?: string;
+  id?: string;
+  level?: 2 | 3;
+}
+
+const { eyebrow, title, intro, id, level = 2 } = Astro.props;
+const Heading = level === 2 ? 'h2' : 'h3';
+---
+
+<header class="section-head">
+  {eyebrow && <p class="section-eyebrow">{eyebrow}</p>}
+  <Heading class="section-title" id={id}>{title}</Heading>
+  {intro && <p class="section-intro">{intro}</p>}
+</header>
+
+<style>
+  .section-head {
+    max-width: 46rem;
+  }
+
+  .section-eyebrow {
+    margin-bottom: 14px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-amber);
+  }
+
+  .section-title {
+    font-size: var(--t-title);
+    scroll-margin-top: calc(var(--nav-h) + 24px);
+  }
+
+  .section-intro {
+    margin-top: 18px;
+    max-width: 44ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.78);
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+/**
+ * A big statement beside its explanation. Facts, if any, list underneath.
+ */
+interface Props {
+  title: string;
+  text: string;
+  facts?: string[];
+  note?: string;
+  id?: string;
+}
+
+const { title, text, facts, note, id } = Astro.props;
+---
+
+<div class="statement" id={id}>
+  <h2 class="statement-title">{title}</h2>
+  <div class="statement-body">
+    <p class="statement-text">{text}</p>
+    {
+      facts && (
+        <ul class="statement-facts">
+          {facts.map((fact) => (
+            <li>{fact}</li>
+          ))}
+        </ul>
+      )
+    }
+    {note && <p class="statement-note">{note}</p>}
+    <slot />
+  </div>
+</div>
+
+<style>
+  .statement {
+    display: grid;
+    gap: 32px;
+    scroll-margin-top: calc(var(--nav-h) + 24px);
+  }
+
+  @media (min-width: 900px) {
+    .statement {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: var(--gutter);
+      align-items: start;
+    }
+  }
+
+  .statement-title {
+    font-size: var(--t-display);
+    max-width: 10em;
+  }
+
+  .statement-text {
+    font-size: var(--t-lead);
+    line-height: 1.55;
+    color: rgb(232 230 225 / 0.84);
+    max-width: 44ch;
+  }
+
+  .statement-facts {
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .statement-facts li {
+    padding-block: 16px;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--color-ash);
+  }
+
+  .statement-note {
+    margin-top: 16px;
+    font-size: var(--t-small);
+    color: var(--color-pumice);
+  }
+</style>

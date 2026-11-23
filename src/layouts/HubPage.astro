@@ -1,0 +1,74 @@
+---
+/** A section hub: Products or Technology, as cards to every page. */
+import Base from './Base.astro';
+import Button from '../components/Button.astro';
+import CtaBand from '../components/CtaBand.astro';
+import SectionHead from '../components/SectionHead.astro';
+import TopicCards from '../components/topic/TopicCards.astro';
+import { hubs } from '../content/topics';
+import type { Section } from '../content/topics/types';
+
+interface Props {
+  section: Section;
+}
+
+const hub = hubs[Astro.props.section];
+---
+
+<Base title={hub.meta.title} description={hub.meta.description}>
+  <section class="hub-hero">
+    <div class="frame">
+      <p class="hub-kicker">{hub.label}</p>
+      <h1 class="hub-title">{hub.title}</h1>
+      <p class="hub-lead">{hub.lead}</p>
+    </div>
+  </section>
+
+  {
+    hub.groups.map((group, i) => (
+      <section class:list={['section', i > 0 && 'section--rule']} aria-label={group.title}>
+        <div class="frame stack-lg">
+          {i > 0 && <SectionHead title={group.title} />}
+          <TopicCards slugs={group.slugs} size={i === 0 ? 'large' : 'small'} />
+        </div>
+      </section>
+    ))
+  }
+
+  <CtaBand title={hub.cta.title} text={hub.cta.text}>
+    <Button href="/contact" size="lg">Talk to us</Button>
+    <Button href="/why-now" variant="secondary" size="lg">Why now</Button>
+  </CtaBand>
+</Base>
+
+<style>
+  .hub-hero {
+    padding-top: calc(var(--nav-h) + clamp(56px, 9vw, 120px));
+  }
+
+  .hub-kicker {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-amber);
+  }
+
+  .hub-title {
+    margin-top: 18px;
+    max-width: 12em;
+    font-size: clamp(3.1rem, 1.9rem + 5.6vw, 8rem);
+    line-height: 0.94;
+    letter-spacing: -0.014em;
+  }
+
+  .hub-lead {
+    margin-top: 26px;
+    max-width: 44ch;
+    font-size: clamp(1.125rem, 1.02rem + 0.45vw, 1.4375rem);
+    line-height: 1.5;
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .hub-hero + .section {
+    padding-top: clamp(48px, 6vw, 80px);
+  }
+</style>

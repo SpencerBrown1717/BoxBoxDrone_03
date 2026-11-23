@@ -1,0 +1,66 @@
+---
+/**
+ * The need today, as numbers: up to three stat tiles. Values are set in the
+ * sans at display size, with proportional figures. Each label cites its source,
+ * so a citation can't be misread as an exponent on the value.
+ */
+import type { Stat } from '../../content/topics/types';
+import type { Refs } from '../../lib/cite';
+import Cite from './Cite.astro';
+
+interface Props {
+  stats: Stat[];
+  refs: Refs;
+}
+
+const { stats, refs } = Astro.props;
+---
+
+<dl class="stats">
+  {
+    stats.map((stat) => (
+      <div class="stat">
+        <dt class="stat-value">{stat.value}</dt>
+        <dd class="stat-label">
+          {stat.label}
+          <Cite ids={stat.sources} refs={refs} />
+        </dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .stats {
+    display: grid;
+    gap: 36px var(--gutter);
+  }
+
+  @media (min-width: 760px) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .stat {
+    padding-top: 22px;
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .stat-value {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: clamp(2.5rem, 1.9rem + 2.4vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-ash);
+  }
+
+  .stat-label {
+    margin: 14px 0 0;
+    max-width: 30ch;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgb(232 230 225 / 0.72);
+  }
+</style>

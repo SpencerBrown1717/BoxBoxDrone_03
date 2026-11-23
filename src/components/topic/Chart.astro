@@ -1,0 +1,1211 @@
+---
+/**
+ * Charts for the topic pages, after the dataviz method: pick the form for the
+ * job, thin marks, hairline grids, a legend for two or more series with direct
+ * labels too, a hover and focus layer, and a table view of every number.
+ *
+ * Color by role: glacier is the signal (BBD's own model and flights), ash the highlight for anything
+ * else, and two grays carry classical and context. Text never wears series color.
+ *
+ * Text lives in HTML over the plot, so it stays legible at any width; lines are
+ * drawn in a stretched SVG with non-scaling strokes.
+ */
+import type { Chart } from '../../content/topics/types';
+import type { Refs } from '../../lib/cite';
+import { pct, scale, tickLabels } from '../../lib/chart-scale';
+import { num, pow10 } from '../../content/topics/series';
+import Cite from './Cite.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  chart: Chart;
+  refs: Refs;
+}
+
+const { chart, refs } = Astro.props;
+const uid = `chart-${Math.random().toString(36).slice(2, 8)}`;
+
+/* ---------- Line ---------- */
+let line: null | {
+  grid: string;
+  paths: { d: string; tone: string; name: string }[];
+  yTicks: { label: string; top: string }[];
+  xTicks: { label: string; left: string; edge: 'start' | 'middle' | 'end' }[];
+  notes: { left: string; top: string; text: string; align: string; side: string }[];
+  ends: { left: string; top: string; name: string; below: boolean }[];
+  data: string;
+  rows: { x: string; values: string[] }[];
+} = null;
+
+if (chart.kind === 'line') {
+  const { x, y, series } = chart;
+  const X = (v: number) => scale(x, v);
+  const Y = (v: number) => scale(y, v);
+  const yl = tickLabels(y);
+  const xl = tickLabels(x);
+  const grid = [
+    ...y.ticks.map((t) => `M0 ${(1000 * (1 - Y(t))).toFixed(1)}H1000`),
+    ...x.ticks.map((t) => `M${(1000 * X(t)).toFixed(1)} 0V1000`),
+  ].join('');
+  const paths = series.map((s) => ({
+    name: s.name,
+    tone: s.tone,
+    d: s.points.map(([px, py], i) => `${i ? 'L' : 'M'}${(1000 * X(px)).toFixed(2)} ${(1000 * (1 - Y(py))).toFixed(2)}`).join(''),
+  }));
+  const xDisplay = chart.xDisplay ?? ((v: number) => num(v));
+  const shared = series[0].points.map(([px]) => px);
+  const display = (si: number, i: number) => {
+    const s = series[si];
+    const [px, py] = s.points[i];
+    return s.display ? s.display(px, py) : num(py);
+  };
+  const data = JSON.stringify({
+    x: shared.map((v) => X(v)),
+    xs: shared.map((v) => xDisplay(v)),
+    series: series.map((s, si) => ({
+      name: s.name,
+      tone: s.tone,
+      y: s.points.map(([, py]) => 1 - Y(py)),
+      v: s.points.map((_, i) => display(si, i)),
+    })),
+  });
+  const step = Math.max(1, Math.round((shared.length - 1) / 8));
+  const rowIdx = shared.map((_, i) => i).filter((i) => i % step === 0 || i === shared.length - 1);
+  line = {
+    grid,
+    paths,
+    yTicks: y.ticks.map((t, i) => ({ label: yl[i], top: pct(1 - Y(t)) })),
+    xTicks: x.ticks.map((t, i) => ({
+      label: xl[i],
+      left: pct(X(t)),
+      edge: i === 0 ? 'start' : i === x.ticks.length - 1 ? 'end' : 'middle',
+    })),
+    // A note sits right of its dot unless it is near the right edge; the script refits it on narrow screens
+    notes: (chart.notes ?? []).map((n) => ({
+      left: pct(X(n.x)),
+      top: pct(1 - Y(n.y)),
+      text: n.text,
+      align: n.align ?? (X(n.x) > 0.6 ? 'end' : 'start'),
+      side: n.side ?? 'above',
+    })),
+    ends:
+      series.length > 1 && series.length <= 4
+        ? series.map((s) => {
+            const [px, py] = s.points[s.points.length - 1];
+            const [, prev] = s.points[s.points.length - 2] ?? [px, py];
+            // A falling line comes in from above, so its label goes underneath, if there's room
+            const below = Y(py) < Y(prev) && Y(py) > 0.18;
+            return { left: pct(X(px)), top: pct(1 - Y(py)), name: s.name, below };
+          })
+        : [],
+    data,
+    rows: rowIdx.map((i) => ({ x: xDisplay(shared[i]), values: series.map((_, si) => display(si, i)) })),
+  };
+}
+
+/* ---------- Bars ---------- */
+const barMax = chart.kind === 'bars' ? Math.max(...chart.rows.map((r) => r.value)) : 1;
+
+/* ---------- Ladder ---------- */
+let ladder: null | { ticks: { label: string; left: string; major: boolean }[]; rows: { left: string }[] } = null;
+if (chart.kind === 'ladder') {
+  const span = chart.from - chart.to;
+  const pos = (v: number) => (chart.from - Math.log10(v)) / span;
+  const step = Math.ceil(Math.abs(span) / 6);
+  const ticks = [];
+  for (let e = chart.from; e >= chart.to; e--) {
+    ticks.push({ label: pow10(e), left: pct((chart.from - e) / span), major: (chart.from - e) % step === 0 });
+  }
+  ladder = { ticks, rows: chart.rows.map((r) => ({ left: pct(pos(r.value)) })) };
+}
+
+/* ---------- Segments ---------- */
+const segTotal = chart.kind === 'segments' ? chart.parts.reduce((sum, part) => sum + part.value, 0) : 1;
+
+/* ---------- Ranges ---------- */
+let ranges: null | {
+  ticks: { label: string; left: string; edge: string }[];
+  rows: { left: string; width: string }[];
+  markers: { left: string; label: string; align: string }[];
+} = null;
+if (chart.kind === 'ranges') {
+  const { axis } = chart;
+  const labels = tickLabels(axis);
+  ranges = {
+    ticks: axis.ticks.map((t, i) => ({
+      label: labels[i],
+      left: pct(scale(axis, t)),
+      edge: i === 0 && scale(axis, t) < 0.02 ? 'start' : i === axis.ticks.length - 1 && scale(axis, t) > 0.98 ? 'end' : 'middle',
+    })),
+    rows: chart.rows.map((r) => ({
+      left: pct(scale(axis, r.low)),
+      width: pct(scale(axis, r.high) - scale(axis, r.low)),
+    })),
+    markers: (chart.markers ?? []).map((m, i, all) => ({
+      left: pct(scale(axis, m.value)),
+      label: m.label,
+      align: all.length === 1 ? 'middle' : i % 2 === 0 ? 'end' : 'start',
+    })),
+  };
+}
+
+const note = chart.illustrative ? ' Modeled to show the shape, not measured data.' : '';
+---
+
+<figure class:list={['chart', `chart--${chart.kind}`]} data-chart id={uid}>
+  <figcaption class="chart-title">{chart.title}</figcaption>
+
+  {
+    line && (
+      <>
+        {line.paths.length > 1 && (
+          <ul class="chart-legend">
+            {line.paths.map((s) => (
+              <li>
+                <span class:list={['key', `tone-${s.tone}`]} aria-hidden="true" />
+                {s.name}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p class="axis-name">{chart.kind === 'line' && chart.y.label}</p>
+        <div class="line-frame">
+          <div class="plot" tabindex="0" data-line={line.data} aria-label={`${chart.title}. Use the arrow keys to read values.`} role="group">
+            <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <path class="grid" d={line.grid} vector-effect="non-scaling-stroke" />
+              {line.paths.map((s) => (
+                <path class:list={['series', `tone-${s.tone}`]} d={s.d} vector-effect="non-scaling-stroke" />
+              ))}
+            </svg>
+            {line.yTicks.map((t) => (
+              <span class="y-tick" style={`top:${t.top}`} aria-hidden="true">
+                {t.label}
+              </span>
+            ))}
+            {line.xTicks.map((t) => (
+              <span class:list={['x-tick', `edge-${t.edge}`]} style={`left:${t.left}`} aria-hidden="true">
+                {t.label}
+              </span>
+            ))}
+            {line.notes.map((n) => (
+              <>
+                <span class="note-dot" style={`left:${n.left};top:${n.top}`} aria-hidden="true" />
+                <span class:list={['note-text', `align-${n.align}`, `side-${n.side}`]} style={`left:${n.left};top:${n.top}`} aria-hidden="true">
+                  {n.text}
+                </span>
+              </>
+            ))}
+            {line.ends.map((e) => (
+              <span class:list={['end-label', e.below && 'is-below']} style={`left:${e.left};top:${e.top}`} aria-hidden="true">
+                {e.name}
+              </span>
+            ))}
+            <span class="crosshair" hidden />
+          </div>
+          <p class="axis-name axis-name--x">{chart.kind === 'line' && chart.x.label}</p>
+        </div>
+      </>
+    )
+  }
+
+  {
+    chart.kind === 'bars' && (
+      <div class="bars">
+        {chart.rows.map((row) => (
+          <div class="bar-row">
+            <span class="bar-label">{row.label}</span>
+            <span class="bar-track">
+              <span
+                class:list={['bar-fill', `tone-${row.tone}`]}
+                style={`--w:${(row.value / barMax).toFixed(4)}`}
+                tabindex="0"
+                data-tip={`${row.display}|${row.label}`}
+                aria-label={`${row.label}: ${row.display}`}
+              />
+              <span class="bar-value">{row.display}</span>
+            </span>
+          </div>
+        ))}
+        <p class="bars-unit">{chart.unit}</p>
+      </div>
+    )
+  }
+
+  {
+    chart.kind === 'ladder' && ladder && (
+      <div class="ladder">
+        {chart.rows.map((row, i) => (
+          <div class="ladder-row">
+            <span class="ladder-label">{row.label}</span>
+            <span class="ladder-track">
+              <span class="ladder-rule" />
+              <span
+                class:list={['ladder-dot', `tone-${row.tone}`]}
+                style={`left:${ladder.rows[i].left}`}
+                tabindex="0"
+                data-tip={`${row.display}|${row.label}`}
+                aria-label={`${row.label}: ${row.display}`}
+              />
+            </span>
+            <span class="ladder-value">{row.display}</span>
+          </div>
+        ))}
+        <div class="ladder-axis" aria-hidden="true">
+          <span class="ladder-label" />
+          <span class="ladder-ticks">
+            {ladder.ticks.map((t) => (
+              <span class:list={['ladder-tick', t.major && 'is-major']} style={`left:${t.left}`}>
+                {t.major && t.label}
+              </span>
+            ))}
+          </span>
+          <span class="ladder-value" />
+        </div>
+        <p class="axis-name axis-name--x">{chart.axis}</p>
+      </div>
+    )
+  }
+
+  {
+    chart.kind === 'odds' && (
+      <div class="odds">
+        {chart.groups.map((group) => (
+          <div class="odds-group">
+            <div class="odds-units">
+              {Array.from({ length: group.count }, () => (
+                <span
+                  class:list={['odds-unit', `tone-${group.tone}`]}
+                  tabindex="0"
+                  data-tip={`${group.count} of ${chart.groups.reduce((s, g) => s + g.count, 0)}|${group.label}`}
+                  aria-label={`${group.label}: ${group.count} of ${chart.groups.reduce((s, g) => s + g.count, 0)} ${chart.noun}`}
+                >
+                  <Icon name="derrick" size={30} />
+                </span>
+              ))}
+            </div>
+            <p class="odds-label">
+              <span class="odds-count">{group.count}</span> {group.label}
+            </p>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    chart.kind === 'segments' && (
+      <div class="segments">
+        <p class="segments-total">
+          Total <strong>{chart.total}</strong>
+        </p>
+        <div class="segment-bar">
+          {chart.parts.map((part) => {
+            const share = part.value / segTotal;
+            return (
+              <span
+                class:list={['segment', `tone-${part.tone}`]}
+                style={`flex-basis:${(share * 100).toFixed(2)}%`}
+                tabindex="0"
+                data-tip={`${part.display}, ${Math.round(share * 100)}%|${part.label}`}
+                aria-label={`${part.label}: ${part.display}, ${Math.round(share * 100)}%`}
+              >
+                {share > 0.12 && <span class="segment-text">{part.display}</span>}
+              </span>
+            );
+          })}
+        </div>
+        <ul class="chart-legend chart-legend--blocks">
+          {chart.parts.map((part) => (
+            <li>
+              <span class:list={['swatch', `tone-${part.tone}`]} aria-hidden="true" />
+              {part.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  {
+    chart.kind === 'ranges' && ranges && (
+      <div class="ranges">
+        <div class="ranges-body">
+          {ranges.markers.length > 0 && (
+            <div class="range-row range-row--markers" aria-hidden="true">
+              <span class="range-label" />
+              <span class="range-track">
+                {ranges.markers.map((m) => (
+                  <span class:list={['marker-label', `align-${m.align}`]} style={`left:${m.left}`}>
+                    {m.label}
+                  </span>
+                ))}
+              </span>
+              <span class="range-value" />
+            </div>
+          )}
+          {chart.rows.map((row, i) => (
+            <div class="range-row">
+              <span class="range-label">{row.label}</span>
+              <span class="range-track">
+                {ranges.markers.map((m) => (
+                  <span class="marker-line" style={`left:${m.left}`} aria-hidden="true" />
+                ))}
+                <span
+                  class:list={['range-fill', `tone-${row.tone}`]}
+                  style={`left:${ranges.rows[i].left};width:${ranges.rows[i].width}`}
+                  tabindex="0"
+                  role="img"
+                  data-tip={`${row.display}|${row.label}`}
+                  aria-label={`${row.label}: ${row.display}`}
+                />
+              </span>
+              <span class="range-value">{row.display}</span>
+            </div>
+          ))}
+          <div class="range-row range-row--axis" aria-hidden="true">
+            <span class="range-label" />
+            <span class="range-track">
+              {ranges.ticks.map((t) => (
+                <span class:list={['range-tick', `edge-${t.edge}`]} style={`left:${t.left}`}>
+                  {t.label}
+                </span>
+              ))}
+            </span>
+            <span class="range-value" />
+          </div>
+        </div>
+        <p class="axis-name axis-name--x">{chart.axis.label}</p>
+      </div>
+    )
+  }
+
+  <p class="chart-caption">
+    {chart.caption}{note}<Cite ids={chart.sources} refs={refs} />
+  </p>
+
+  <details class="chart-data">
+    <summary>Show the numbers</summary>
+    <div class="table-wrap">
+      {
+        chart.kind === 'line' && line && (
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{chart.x.label}</th>
+                {chart.series.map((s) => (
+                  <th scope="col">{s.name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {line.rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.x}</th>
+                  {row.values.map((v) => (
+                    <td>{v}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+      {
+        (chart.kind === 'bars' || chart.kind === 'ladder') && (
+          <table>
+            <tbody>
+              {chart.rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.label}</th>
+                  <td>{row.display}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+      {
+        chart.kind === 'odds' && (
+          <table>
+            <tbody>
+              {chart.groups.map((g) => (
+                <tr>
+                  <th scope="row">{g.label}</th>
+                  <td>
+                    {g.count} of {chart.groups.reduce((s, x) => s + x.count, 0)} {chart.noun}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+      {
+        chart.kind === 'segments' && (
+          <table>
+            <tbody>
+              {chart.parts.map((part) => (
+                <tr>
+                  <th scope="row">{part.label}</th>
+                  <td>{part.display}</td>
+                </tr>
+              ))}
+              <tr>
+                <th scope="row">Total</th>
+                <td>{chart.total}</td>
+              </tr>
+            </tbody>
+          </table>
+        )
+      }
+      {
+        chart.kind === 'ranges' && (
+          <table>
+            <tbody>
+              {chart.rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.label}</th>
+                  <td>{row.display}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+    </div>
+  </details>
+
+  <div class="chart-tip" role="status" aria-live="polite" hidden></div>
+</figure>
+
+<script>
+  import '../../scripts/charts';
+</script>
+
+<style>
+  .chart {
+    position: relative;
+    /* Without script, a long note near the edge can't widen the page */
+    overflow-x: clip;
+    overflow-clip-margin: 6px;
+    --surface: var(--color-obsidian);
+    --grid: rgb(232 230 225 / 0.08);
+    --quantum: var(--color-glacier);
+    --highlight: var(--color-ash);
+    --classical: var(--color-pumice);
+    --context: #5c5966;
+  }
+
+  .tone-quantum {
+    --tone: var(--quantum);
+  }
+
+  .tone-highlight {
+    --tone: var(--highlight);
+  }
+
+  .tone-classical {
+    --tone: var(--classical);
+  }
+
+  .tone-context {
+    --tone: var(--context);
+  }
+
+  .chart-title {
+    font-weight: 500;
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    color: var(--color-ash);
+  }
+
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    color: rgb(232 230 225 / 0.78);
+  }
+
+  .chart-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .key {
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--tone);
+  }
+
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--tone);
+  }
+
+  .axis-name {
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-pumice);
+  }
+
+  .axis-name--x {
+    margin-top: 10px;
+    text-align: right;
+  }
+
+  .chart-caption {
+    margin-top: 18px;
+    max-width: 62ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: rgb(232 230 225 / 0.7);
+  }
+
+  /* ---------- Line ---------- */
+
+  .line-frame {
+    padding-left: 54px;
+  }
+
+  .plot {
+    position: relative;
+    height: clamp(220px, 32vw, 320px);
+    margin-top: 10px;
+    margin-bottom: 30px;
+    outline-offset: 6px;
+    touch-action: pan-y;
+  }
+
+  .plot svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .grid {
+    fill: none;
+    stroke: var(--grid);
+    stroke-width: 1;
+  }
+
+  .series {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .y-tick,
+  .x-tick {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-pumice);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .y-tick {
+    left: -12px;
+    translate: -100% -50%;
+  }
+
+  .x-tick {
+    top: calc(100% + 9px);
+    translate: -50% 0;
+  }
+
+  .x-tick.edge-start {
+    translate: 0 0;
+  }
+
+  .x-tick.edge-end {
+    translate: -100% 0;
+  }
+
+  .note-dot {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-ash);
+    box-shadow: 0 0 0 2px var(--surface);
+    translate: -50% -50%;
+    pointer-events: none;
+  }
+
+  .note-text,
+  .end-label {
+    position: absolute;
+    /* Size to the text, not to the space left before the plot's edge */
+    width: max-content;
+    max-width: 22ch;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: rgb(232 230 225 / 0.82);
+    pointer-events: none;
+  }
+
+  .note-text {
+    translate: calc(12px + var(--nudge, 0px)) -120%;
+    /* A halo in the plot's own color, so a line passing under the words can't cut through them */
+    text-shadow:
+      0 0 3px var(--surface),
+      0 0 6px var(--surface),
+      0 0 10px var(--surface);
+  }
+
+  .note-text.align-end,
+  .note-text.is-flipped {
+    translate: calc(-100% - 12px + var(--nudge, 0px)) -120%;
+    text-align: right;
+  }
+
+  .note-text.align-end.is-flipped {
+    translate: calc(12px + var(--nudge, 0px)) -120%;
+    text-align: left;
+  }
+
+  .note-text.side-below {
+    translate: calc(12px + var(--nudge, 0px)) 8px;
+  }
+
+  .note-text.side-below:is(.align-end, .is-flipped) {
+    translate: calc(-100% - 12px + var(--nudge, 0px)) 8px;
+  }
+
+  .note-text.side-below.align-end.is-flipped {
+    translate: calc(12px + var(--nudge, 0px)) 8px;
+  }
+
+  .end-label {
+    translate: calc(-100% - 6px) calc(-100% - 6px);
+    text-align: right;
+    color: var(--color-pumice);
+    font-size: 0.75rem;
+    text-shadow:
+      0 0 3px var(--surface),
+      0 0 6px var(--surface),
+      0 0 10px var(--surface);
+  }
+
+  .end-label.is-below {
+    translate: calc(-100% - 6px) 6px;
+  }
+
+  .crosshair {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgb(232 230 225 / 0.35);
+    pointer-events: none;
+  }
+
+  .plot :global(.cross-dot) {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--tone);
+    box-shadow: 0 0 0 2px var(--surface);
+    translate: -50% -50%;
+    pointer-events: none;
+  }
+
+  /* ---------- Bars ---------- */
+
+  .bars {
+    display: grid;
+    gap: 18px;
+    margin-top: 22px;
+  }
+
+  .bar-row {
+    display: grid;
+    gap: 8px;
+  }
+
+  @media (min-width: 720px) {
+    .bar-row {
+      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+      align-items: center;
+      gap: 20px;
+    }
+  }
+
+  .bar-label {
+    font-size: 0.9375rem;
+    color: rgb(232 230 225 / 0.85);
+  }
+
+  .bar-track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bar-fill {
+    flex: none;
+    width: max(4px, calc((100% - 4.5rem) * var(--w)));
+    height: 20px;
+    border-radius: 0 4px 4px 0;
+    background: var(--tone);
+    outline-offset: 3px;
+  }
+
+  .bar-value {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-ash);
+  }
+
+  .bars-unit {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-pumice);
+  }
+
+  /* ---------- Ladder ---------- */
+
+  .ladder {
+    display: grid;
+    gap: 14px;
+    margin-top: 22px;
+  }
+
+  .ladder-row,
+  .ladder-axis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label value'
+      'track track';
+    align-items: center;
+    gap: 6px 16px;
+  }
+
+  @media (min-width: 820px) {
+    .ladder-row,
+    .ladder-axis {
+      grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 9rem);
+      grid-template-areas: 'label track value';
+      gap: 20px;
+    }
+  }
+
+  .ladder-label {
+    grid-area: label;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    color: rgb(232 230 225 / 0.85);
+  }
+
+  .ladder-value {
+    grid-area: value;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-ash);
+    white-space: nowrap;
+  }
+
+  .ladder-track,
+  .ladder-ticks {
+    grid-area: track;
+    position: relative;
+    height: 18px;
+  }
+
+  .ladder-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--grid);
+  }
+
+  .ladder-dot {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--tone);
+    box-shadow: 0 0 0 2px var(--surface);
+    translate: -50% -50%;
+    outline-offset: 3px;
+  }
+
+  .ladder-dot::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+
+  .ladder-axis {
+    margin-top: 2px;
+  }
+
+  .ladder-axis .ladder-label,
+  .ladder-axis .ladder-value {
+    min-height: 0;
+  }
+
+  .ladder-tick {
+    position: absolute;
+    top: 0;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-pumice);
+    white-space: nowrap;
+  }
+
+  .ladder-tick::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 5px;
+    margin: 0 auto 3px;
+    background: rgb(232 230 225 / 0.2);
+  }
+
+  .ladder-tick:first-child {
+    translate: 0 0;
+  }
+
+  .ladder-tick:first-child::before {
+    margin-left: 0;
+  }
+
+  .ladder-tick:last-child {
+    translate: -100% 0;
+  }
+
+  .ladder-tick:last-child::before {
+    margin-right: 0;
+  }
+
+  /* ---------- Odds ---------- */
+
+  .odds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 40px;
+    margin-top: 24px;
+  }
+
+  .odds-units {
+    display: flex;
+    gap: 8px;
+  }
+
+  .odds-unit {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 72px;
+    color: var(--tone);
+    background: rgb(232 230 225 / 0.03);
+    border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+    border-radius: 6px;
+    outline-offset: 3px;
+  }
+
+  .odds-unit.tone-highlight {
+    background: rgb(232 230 225 / 0.1);
+  }
+
+  .odds-label {
+    margin-top: 10px;
+    max-width: 18ch;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    color: rgb(232 230 225 / 0.85);
+  }
+
+  .odds-count {
+    font-weight: 600;
+    color: var(--color-ash);
+  }
+
+  /* ---------- Segments ---------- */
+
+  .segments {
+    margin-top: 22px;
+  }
+
+  .segments-total {
+    font-size: 0.9375rem;
+    color: var(--color-pumice);
+  }
+
+  .segments-total strong {
+    font-weight: 600;
+    color: var(--color-ash);
+  }
+
+  .segment-bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+    margin-top: 10px;
+  }
+
+  .segment {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding-left: 10px;
+    border-radius: 4px;
+    background: var(--tone);
+    outline-offset: 3px;
+  }
+
+  .segment-text {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #fff;
+  }
+
+  .segment.tone-highlight .segment-text,
+  .segment.tone-classical .segment-text {
+    color: var(--color-obsidian);
+  }
+
+  .chart-legend--blocks {
+    margin-top: 14px;
+  }
+
+  /* ---------- Ranges ---------- */
+
+  .ranges {
+    margin-top: 22px;
+  }
+
+  .ranges-body {
+    display: grid;
+    gap: 16px;
+  }
+
+  .range-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label value'
+      'track track';
+    align-items: center;
+    gap: 6px 16px;
+  }
+
+  @media (min-width: 820px) {
+    .range-row {
+      grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) minmax(0, 8rem);
+      grid-template-areas: 'label track value';
+      gap: 20px;
+    }
+  }
+
+  .range-label {
+    grid-area: label;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    color: rgb(232 230 225 / 0.85);
+  }
+
+  .range-value {
+    grid-area: value;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-ash);
+    white-space: nowrap;
+  }
+
+  .range-track {
+    grid-area: track;
+    position: relative;
+    height: 16px;
+    background: linear-gradient(var(--grid), var(--grid)) center / 100% 1px no-repeat;
+  }
+
+  .range-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 6px;
+    border-radius: 4px;
+    background: var(--tone);
+    outline-offset: 3px;
+  }
+
+  .range-row--axis .range-track {
+    height: 22px;
+    background: none;
+  }
+
+  .range-tick {
+    position: absolute;
+    top: 4px;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-pumice);
+    white-space: nowrap;
+  }
+
+  .range-tick.edge-start {
+    translate: 0 0;
+  }
+
+  .range-tick.edge-end {
+    translate: -100% 0;
+  }
+
+  .marker-line {
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    width: 1px;
+    background: rgb(232 230 225 / 0.4);
+    pointer-events: none;
+  }
+
+  .range-row--markers .range-track {
+    height: 18px;
+    background: none;
+  }
+
+  .marker-label {
+    position: absolute;
+    bottom: 0;
+    translate: -50% 0;
+  }
+
+  .marker-label.align-end {
+    translate: calc(-100% - 5px) 0;
+  }
+
+  .marker-label.align-start {
+    translate: 5px 0;
+  }
+
+  .marker-label {
+    font-size: 0.75rem;
+    color: rgb(232 230 225 / 0.85);
+    white-space: nowrap;
+  }
+
+  /* ---------- Table view and tooltip ---------- */
+
+  .chart-data {
+    margin-top: 14px;
+    font-size: 0.875rem;
+    color: var(--color-pumice);
+  }
+
+  .chart-data summary {
+    display: inline-block;
+    cursor: pointer;
+    color: rgb(232 230 225 / 0.78);
+    text-decoration: underline;
+    text-decoration-color: rgb(232 230 225 / 0.3);
+    text-underline-offset: 0.22em;
+  }
+
+  .chart-data summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .chart-data summary:hover {
+    color: var(--color-ash);
+  }
+
+  .table-wrap {
+    margin-top: 12px;
+    overflow-x: auto;
+  }
+
+  .chart-data table {
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chart-data th,
+  .chart-data td {
+    padding: 7px 18px 7px 0;
+    border-bottom: 1px solid var(--hairline);
+    text-align: left;
+    font-weight: 400;
+    vertical-align: top;
+  }
+
+  .chart-data thead th {
+    color: var(--color-ash);
+  }
+
+  .chart-data td {
+    color: rgb(232 230 225 / 0.85);
+  }
+
+  .chart-tip {
+    position: absolute;
+    z-index: 5;
+    display: grid;
+    gap: 2px;
+    max-width: 260px;
+    padding: 9px 12px;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-pumice);
+    background: var(--color-graphite);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.8);
+    pointer-events: none;
+    translate: -50% calc(-100% - 12px);
+  }
+
+  .chart-tip[hidden] {
+    display: none;
+  }
+
+  .chart-tip :global(strong) {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-ash);
+  }
+
+  .chart-tip :global(.tip-row) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-tip :global(.tip-key) {
+    flex: none;
+    width: 12px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--tone);
+  }
+
+  [data-tip]:hover,
+  [data-tip]:focus-visible {
+    filter: brightness(1.15);
+  }
+</style>

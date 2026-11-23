@@ -1,0 +1,169 @@
+---
+import Logo from './Logo.astro';
+import { tabs } from '../content/nav';
+import { site, mailto } from '../config/site';
+
+const year = new Date().getFullYear();
+const columns = [
+  ...tabs.map((tab) => ({
+    title: tab.label,
+    href: tab.href,
+    links: tab.items.map(({ title, href }) => ({ title, href })),
+  })),
+  {
+    title: 'Company',
+    href: '/company',
+    links: [
+      { title: 'About', href: '/company' },
+      { title: 'Why now', href: '/why-now' },
+      { title: 'Contact', href: '/contact' },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="footer-mark" href="/" aria-label="BBD home">
+        <Logo size={30} />
+      </a>
+      <p class="footer-name">BBD <span>{site.legalName}</span></p>
+      <p class="footer-mission">{site.mission}</p>
+      <p class="footer-place">{site.locality}, {site.region}</p>
+    </div>
+
+    <nav class="footer-nav" aria-label="Footer">
+      {
+        columns.map((column) => (
+          <div class="footer-col">
+            <a class="footer-col-title" href={column.href}>
+              {column.title}
+            </a>
+            <ul>
+              {column.links.map((link) => (
+                <li>
+                  <a href={link.href}>{link.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+  </div>
+
+  <div class="footer-base">
+    <p>© {year} {site.legalName}</p>
+    <p class="footer-base-links">
+      <a href={mailto()}>{site.email}</a>
+      <a href="/contact">Contact</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    background: var(--color-obsidian);
+    border-top: 1px solid var(--hairline);
+    font-size: var(--t-small);
+    color: var(--color-pumice);
+  }
+
+  .footer-inner {
+    display: grid;
+    gap: 56px;
+    max-width: var(--max);
+    margin-inline: auto;
+    padding: 80px var(--margin) 56px;
+  }
+
+  @media (min-width: 1100px) {
+    .footer-inner {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+      gap: var(--gutter);
+    }
+  }
+
+  .footer-mark {
+    display: inline-flex;
+    color: var(--color-white);
+  }
+
+  .footer-name {
+    margin-top: 18px;
+    color: var(--color-ash);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .footer-name span {
+    margin-left: 6px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: rgb(232 230 225 / 0.72);
+  }
+
+  .footer-mission,
+  .footer-place {
+    margin-top: 4px;
+  }
+
+  .footer-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px var(--gutter);
+  }
+
+  @media (min-width: 760px) {
+    .footer-nav {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .footer-col-title {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--color-ash);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .footer-col ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer-col a:not(.footer-col-title),
+  .footer-base a {
+    color: var(--color-pumice);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover,
+  .footer-base a:hover {
+    color: var(--color-ash);
+  }
+
+  .footer-base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: var(--max);
+    margin-inline: auto;
+    padding: 20px var(--margin) calc(28px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--hairline);
+  }
+
+  .footer-base-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+</style>

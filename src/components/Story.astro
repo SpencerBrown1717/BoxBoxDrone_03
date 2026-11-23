@@ -1,0 +1,114 @@
+---
+/**
+ * The home story in one continuous stage: the line sweeps down and rewrites the
+ * hero, settles into the ground line, and the field below it plays each scene
+ * as its copy scrolls by: delivery, the world action model, Drako, shows and
+ * the specialized models.
+ *
+ * Two modes:
+ * - Animated (default when motion is allowed): one sticky stage holds the line
+ *   and the field; the scroll drives the choreography.
+ * - Still (no script, or reduced motion): the finished hero frame, then a sticky
+ *   field that changes its picture per scene, with no motion.
+ */
+import Barrier from './Barrier.astro';
+import Field from './Field.astro';
+import SectorScene from './SectorScene.astro';
+import { scenes } from '../content/home';
+---
+
+<section class="story" data-story aria-label="What BBD builds">
+  <div class="stage" data-stage>
+    <Field />
+    <Barrier />
+    <button class="motion-toggle button button--secondary button--sm" type="button" data-motion-toggle hidden>Pause motion</button>
+  </div>
+
+  <div class="track" data-track>
+    <div class="hero-spacer" data-hero-spacer aria-hidden="true"></div>
+    {
+      scenes.map((scene) => (
+        <SectorScene id={scene.id} scene={scene.scene} eyebrow={scene.eyebrow} headline={scene.headline} support={scene.support}>
+          <a class="scene-link text-link" href={scene.link.href}>
+            {scene.link.label}
+          </a>
+        </SectorScene>
+      ))
+    }
+    <div class="track-end" aria-hidden="true"></div>
+  </div>
+</section>
+
+<script>
+  import '../scripts/story';
+</script>
+
+<style>
+  .story {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    --floor-gap: 56px;
+    --hero-scroll: 150svh;
+  }
+
+  @media (min-width: 768px) {
+    .story {
+      --floor-gap: 72px;
+      --hero-scroll: 175svh;
+    }
+  }
+
+  /* Still mode: the stage dissolves, so the hero is its own screen and the field follows it */
+  .stage {
+    display: contents;
+  }
+
+  .track {
+    order: 2;
+    position: relative;
+    z-index: 2;
+    margin-top: -100svh;
+    pointer-events: none;
+  }
+
+  .hero-spacer {
+    height: 0;
+  }
+
+  /* The last scene's copy scrolls away before the stage does, so the field never slides under it */
+  :global(.motion-ok) .track-end {
+    height: 60svh;
+  }
+
+  /* Animated mode: one sticky stage */
+  :global(.motion-ok) .stage {
+    display: block;
+    position: sticky;
+    top: 0;
+    order: 0;
+    z-index: 1;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  :global(.motion-ok) .hero-spacer {
+    height: calc(100svh + var(--hero-scroll));
+  }
+
+  .motion-toggle {
+    position: absolute;
+    right: var(--margin);
+    bottom: 16px;
+    z-index: 4;
+  }
+
+  .motion-toggle[hidden] {
+    display: none;
+  }
+
+  /* Only offered once the field, which moves on its own, is on screen */
+  .story:not(:global(.is-past-hero)) .motion-toggle {
+    visibility: hidden;
+  }
+</style>

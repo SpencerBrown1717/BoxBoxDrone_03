@@ -1,0 +1,50 @@
+---
+/**
+ * The closing action of a page.
+ */
+interface Props {
+  title: string;
+  text: string;
+}
+
+const { title, text } = Astro.props;
+---
+
+<section class="cta section--rule">
+  <div class="cta-inner">
+    <h2 class="cta-title">{title}</h2>
+    <p class="cta-text">{text}</p>
+    <div class="cta-actions"><slot /></div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: clamp(96px, 14vw, 176px);
+  }
+
+  .cta-inner {
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+  }
+
+  .cta-title {
+    font-size: var(--t-display);
+    max-width: 12em;
+  }
+
+  .cta-text {
+    margin-top: 24px;
+    max-width: 44ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.78);
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 32px;
+  }
+</style>

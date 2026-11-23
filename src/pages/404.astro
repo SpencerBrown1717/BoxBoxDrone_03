@@ -1,0 +1,100 @@
+---
+import Base from '../layouts/Base.astro';
+
+// A flight path that wanders off the map: it climbs, loops once and fades out.
+const width = 800;
+const height = 140;
+const mid = height / 2;
+let d = `M 0 ${mid}`;
+for (let x = 0; x <= width; x += 2) {
+  const y = mid - 44 * Math.exp(-x / 260) * Math.sin((2 * Math.PI * x) / 210);
+  d += ` L ${x} ${y.toFixed(2)}`;
+}
+---
+
+<Base title="Off the map | BBD" description="There's no page at this address." noindex>
+  <section class="lost">
+    <div class="lost-inner">
+      <svg class="trace" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path d={d} pathLength="1"></path>
+      </svg>
+      <h1 class="lost-title">Off the map.</h1>
+      <p class="lost-support">There's no page at this address. Check the link, or go back to the home page.</p>
+      <a class="lost-back" href="/">Back to home</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    align-items: center;
+    min-height: 100svh;
+    padding-block: calc(var(--nav-h) + 48px) 96px;
+  }
+
+  .lost-inner {
+    width: 100%;
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+  }
+
+  .trace {
+    display: block;
+    width: 100%;
+    height: clamp(90px, 16vw, 140px);
+    margin-bottom: 48px;
+    overflow: visible;
+  }
+
+  .trace path {
+    fill: none;
+    stroke: var(--color-glacier);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 0 6px rgb(110 231 249 / 0.6));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .trace path {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: ring-down 2.6s var(--ease-out) 0.2s forwards;
+    }
+  }
+
+  @keyframes ring-down {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .lost-title {
+    font-size: var(--t-display);
+  }
+
+  .lost-support {
+    margin-top: 18px;
+    max-width: 40ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.78);
+  }
+
+  .lost-back {
+    display: inline-flex;
+    align-items: center;
+    height: 48px;
+    margin-top: 32px;
+    padding: 0 22px;
+    color: var(--color-ash);
+    text-decoration: none;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+
+  .lost-back:hover {
+    border-color: var(--color-ash);
+  }
+</style>

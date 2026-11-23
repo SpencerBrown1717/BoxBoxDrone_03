@@ -1,0 +1,74 @@
+---
+/** Three reasons, each with an icon, a short title and a cited sentence or two. */
+import type { Point } from '../../content/topics/types';
+import type { Refs } from '../../lib/cite';
+import Icon from '../Icon.astro';
+import Cite from './Cite.astro';
+
+interface Props {
+  points: Point[];
+  refs: Refs;
+}
+
+const { points, refs } = Astro.props;
+---
+
+<ul class="points">
+  {
+    points.map((point) => (
+      <li class="point">
+        <span class="point-icon">
+          <Icon name={point.icon} size={24} />
+        </span>
+        <h3 class="point-title">{point.title}</h3>
+        <p class="point-text">
+          {point.text}
+          <Cite ids={point.sources} refs={refs} />
+        </p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .points {
+    display: grid;
+    gap: 36px var(--gutter);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 860px) {
+    .points {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .point-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--color-glacier);
+    background: var(--night-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 50%;
+  }
+
+  .point-title {
+    margin-top: 20px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+  .point-text {
+    margin-top: 10px;
+    max-width: 38ch;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgb(232 230 225 / 0.74);
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+/**
+ * A scene told over the field: copy sits above the ground line while the field
+ * shows what the copy describes below it. A scene can have beats, each switching
+ * the field to a new picture (defense: the submarine, then the tunnel).
+ */
+interface Props {
+  id: string;
+  scene: string;
+  eyebrow?: string;
+  headline: string;
+  support: string;
+  beats?: readonly string[];
+}
+
+const { id, scene, eyebrow, headline, support, beats } = Astro.props;
+---
+
+<article
+  class:list={['scene', beats && beats.length > 1 && 'scene--beats']}
+  id={id}
+  data-scene={scene}
+  data-observe={beats ? undefined : scene}
+>
+  <div class="scene-copy">
+    <div class="scene-copy-inner" data-clear>
+      {eyebrow && <p class="scene-eyebrow">{eyebrow}</p>}
+      <h2 class="scene-title">{headline}</h2>
+      <p class="scene-support">{support}</p>
+      <slot />
+    </div>
+  </div>
+  {
+    beats?.map((beat, i) => (
+      <div
+        class="scene-beat"
+        data-observe={beat}
+        aria-hidden="true"
+        style={`top:${(i * 100) / beats.length}%;height:${100 / beats.length}%`}
+      />
+    ))
+  }
+</article>
+
+<style>
+  .scene {
+    position: relative;
+    min-height: 130svh;
+  }
+
+  .scene--beats {
+    min-height: 210svh;
+  }
+
+  .scene-copy {
+    position: sticky;
+    top: calc(var(--nav-h) + 28px);
+    z-index: 1;
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+    pointer-events: none;
+  }
+
+  .scene-copy-inner {
+    max-width: 38rem;
+    pointer-events: auto;
+  }
+
+  .scene-eyebrow {
+    margin-bottom: 10px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-amber);
+  }
+
+  .scene-title {
+    font-size: var(--t-title);
+    color: var(--color-ash);
+  }
+
+  .scene-support {
+    margin-top: 16px;
+    max-width: 36ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.78);
+  }
+
+  .scene-copy-inner > :global(.scene-link) {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .scene-beat {
+    position: absolute;
+    left: 0;
+    width: 1px;
+    pointer-events: none;
+  }
+</style>

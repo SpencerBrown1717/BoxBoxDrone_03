@@ -1,0 +1,111 @@
+---
+/**
+ * Applications, as a technical catalog: one row per use, with what the sensor measures.
+ */
+import type { CatalogItem } from '../lib/types';
+
+interface Props {
+  items: CatalogItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="catalog">
+  {
+    items.map((item) => (
+      <article class="catalog-row" id={item.id}>
+        <div class="catalog-name">
+          <p class="catalog-kicker">{item.kicker}</p>
+          <h3 class="catalog-title">{item.title}</h3>
+        </div>
+        <div class="catalog-body">
+          <p class="catalog-text">{item.text}</p>
+          {item.measures && (
+            <p class="catalog-measures">
+              <span>Measures</span>
+              {item.measures}
+            </p>
+          )}
+          {item.source && (
+            <p class="catalog-source">
+              Source:{' '}
+              <a class="text-link" href={item.source.url} rel="noopener">
+                {item.source.label}
+              </a>
+            </p>
+          )}
+          {item.link && (
+            <p class="catalog-link">
+              <a class="text-link" href={item.link.href}>
+                {item.link.label}
+              </a>
+            </p>
+          )}
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .catalog {
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .catalog-row {
+    display: grid;
+    gap: 18px;
+    padding-block: clamp(36px, 5vw, 64px);
+    border-bottom: 1px solid var(--hairline);
+    scroll-margin-top: calc(var(--nav-h) + 16px);
+  }
+
+  @media (min-width: 900px) {
+    .catalog-row {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--gutter);
+    }
+  }
+
+  .catalog-kicker {
+    font-size: 0.875rem;
+    color: var(--color-pumice);
+  }
+
+  .catalog-title {
+    margin-top: 8px;
+    font-size: clamp(2.25rem, 1.7rem + 2vw, 3.5rem);
+  }
+
+  .catalog-text {
+    max-width: 52ch;
+    font-size: var(--t-lead);
+    line-height: 1.55;
+    color: rgb(232 230 225 / 0.84);
+  }
+
+  .catalog-measures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: baseline;
+    margin-top: 22px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-glacier);
+  }
+
+  .catalog-measures span {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-pumice);
+  }
+
+  .catalog-source,
+  .catalog-link {
+    margin-top: 14px;
+    font-size: 0.875rem;
+    color: var(--color-pumice);
+  }
+</style>

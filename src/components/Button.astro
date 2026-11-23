@@ -1,0 +1,78 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'a'> {
+  href: string;
+  variant?: 'primary' | 'secondary';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { href, variant = 'primary', size = 'md', class: className, ...attributes } = Astro.props;
+---
+
+<a {...attributes} class:list={['button', `button--${variant}`, `button--${size}`, className]} href={href}><slot /></a>
+
+<style is:global>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding-inline: 24px;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  .button--sm {
+    min-height: 40px;
+    padding-inline: 16px;
+    font-size: 0.875rem;
+  }
+
+  /* Phones get the full 44px touch target, compact buttons included. */
+  @media (max-width: 767px) {
+    .button--sm {
+      min-height: 44px;
+    }
+  }
+
+  .button:focus-visible {
+    outline: 3px solid var(--color-ash);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-ok:not([data-motion='paused']) .button {
+      transition: border-color 0.2s, box-shadow 0.3s;
+    }
+  }
+
+  .button--primary {
+    color: var(--iris-ink);
+    background: var(--iris);
+    box-shadow: var(--iris-bevel);
+  }
+
+  .button--primary:hover {
+    background: var(--iris-hover);
+    box-shadow: var(--iris-bevel), var(--iris-halo);
+  }
+
+  .button--primary:active {
+    background: var(--iris-press);
+  }
+
+  .button--secondary {
+    color: var(--color-ash);
+    background: transparent;
+    border: 1px solid var(--button-outline);
+  }
+
+  .button--secondary:hover {
+    border-color: var(--button-outline-hover);
+  }
+</style>

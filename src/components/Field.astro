@@ -1,0 +1,36 @@
+---
+/**
+ * The canvas for the field below the ground line: the world BBD flies over. Drawn by scripts/field.ts,
+ * orchestrated by scripts/story.ts. Hidden from assistive technology: the
+ * scenes tell the same story in text.
+ */
+---
+
+<div class="field" data-field>
+  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
+</div>
+
+<style>
+  .field {
+    position: sticky;
+    top: 0;
+    order: 1;
+    height: 100svh;
+    z-index: 0;
+  }
+
+  :global(.motion-ok) .field {
+    position: absolute;
+    inset: 0;
+    height: auto;
+    opacity: 0;
+  }
+
+  .field-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

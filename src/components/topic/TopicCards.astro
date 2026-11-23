@@ -1,0 +1,132 @@
+---
+/**
+ * Cards that lead to other pages: a still of the page's scene, its title and
+ * one line. Used for sub-pages, related pages and the section hubs.
+ */
+import { cardFor } from '../../content/topics';
+import Icon from '../Icon.astro';
+import TopicScene from './TopicScene.astro';
+
+interface Props {
+  slugs: string[];
+  /** Larger cards for the main pages of a hub. */
+  size?: 'large' | 'small';
+}
+
+const { slugs, size = 'small' } = Astro.props;
+const cards = slugs.map(cardFor);
+// Full rows on wide screens: three across for three, six or nine cards; large cards otherwise go two across
+const n = cards.length;
+const cols = n % 3 === 0 ? 3 : size === 'large' ? Math.min(n, 2) : Math.min(n, 3);
+---
+
+<ul class:list={['cards', `cards--${size}`]} style={`--cols:${cols}`}>
+  {
+    cards.map((card) => (
+      <li>
+        <a class="card" href={card.href}>
+          <span class="card-art">{card.scene ? <TopicScene scene={card.scene} thumb /> : <Icon name={card.icon} size={40} />}</span>
+          <span class="card-body">
+            <span class="card-title">
+              <Icon name={card.icon} size={18} class="card-icon" />
+              {card.title}
+            </span>
+            <span class="card-text">{card.text}</span>
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .cards {
+    display: grid;
+    gap: var(--gutter);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 680px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .cards {
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    background: var(--color-graphite);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-surface);
+    overflow: hidden;
+  }
+
+  .card:hover {
+    border-color: var(--hairline-strong);
+  }
+
+  .card-art {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 2 / 1;
+    padding: 6px 10px 0;
+    color: var(--color-glacier);
+    background: var(--night);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .card-art :global(.scene) {
+    width: 100%;
+  }
+
+  .card-body {
+    display: grid;
+    gap: 8px;
+    padding: 24px;
+  }
+
+  .card-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--color-ash);
+  }
+
+  .cards--large .card-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.875rem;
+    line-height: 1.05;
+  }
+
+  .card :global(.card-icon) {
+    flex: none;
+    color: var(--color-glacier);
+  }
+
+  .cards--large .card :global(.card-icon) {
+    display: none;
+  }
+
+  .card-text {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgb(232 230 225 / 0.7);
+  }
+
+  .card:hover .card-title {
+    color: var(--color-white);
+  }
+</style>

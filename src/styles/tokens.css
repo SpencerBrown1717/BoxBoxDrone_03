@@ -1,0 +1,145 @@
+/*
+  Katmai design tokens.
+  Named for materials, after Mount Katmai: obsidian, graphite, ash, pumice, basalt and glacier,
+  plus amethyst, amber and opal from the iridescent glass in the Katmai app's artwork.
+  Amethyst is for buying and primary actions. Amber is for labels and wayfinding.
+  Glacier is reserved for the quantum signal. Opal is the rainbow edge of the glass: the barrier line and glass edges.
+  Iris is the glass itself: light iridescent primary buttons with dark ink, rainbow card rims and section rules.
+  Surfaces are true black; glass adds only a faint sheen from above.
+*/
+@theme static {
+  --color-obsidian: #000000;
+  --color-graphite: #050505;
+  --color-ash: #e8e6e1;
+  --color-pumice: #8b8f98;
+  --color-amethyst: #6f52ff;
+  --color-amber: #f2b66b;
+  /* Older name for the action color, kept so other branches keep working */
+  --color-cobalt: #6f52ff;
+  --color-glacier: #6ee7f9;
+  --color-basalt: #2b221d;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+:root {
+  /* Supporting tones derived from the palette */
+  --amethyst-hot: #c4b5ff;
+  --amethyst-hover: #5f42f2;
+  --amethyst-press: #5034dc;
+  --amethyst-deep: #22174f;
+  --amethyst-dusk: #2d1f6b;
+  --night-deep: #000000;
+  --night: #030303;
+  --night-raised: #070707;
+  --basalt-line: #5a473b;
+
+  /* Channels for translucent tints: rgb(var(--name-rgb) / alpha) */
+  --obsidian-rgb: 0 0 0;
+  --graphite-rgb: 5 5 5;
+  --night-rgb: 3 3 3;
+  --amethyst-rgb: 111 82 255;
+  --amethyst-hot-rgb: 196 181 255;
+  --amber-rgb: 242 182 107;
+
+  /* Iridescence: the violet, cyan and warm amber of the glass in the Katmai art */
+  --iris-violet: #b9a6ff;
+  --iris-cyan: #8fe3ff;
+  --iris-amber: #ffc98f;
+  --iris-violet-rgb: 185 166 255;
+  --iris-cyan-rgb: 143 227 255;
+  --iris-amber-rgb: 255 201 143;
+  --iris-ink: #0b0a12;
+
+  /* Primary buttons: a light iridescent fill with dark ink. Worst point along each gradient
+     with --iris-ink: 9.34:1 at rest, 11.21:1 on hover, 7.65:1 pressed. */
+  --iris: linear-gradient(105deg, var(--iris-violet) 0%, var(--iris-cyan) 52%, var(--iris-amber) 100%);
+  --iris-hover: linear-gradient(105deg, #c9baff 0%, #a6ebff 52%, #ffd6a8 100%);
+  --iris-press: linear-gradient(105deg, #a891ff 0%, #79d8f5 52%, #f5bb7c 100%);
+  --iris-bevel: inset 0 1px 0 rgb(255 255 255 / 0.6), inset 0 -1px 0 rgb(var(--obsidian-rgb) / 0.14);
+  --iris-halo: 0 12px 38px -14px rgb(var(--iris-violet-rgb) / 0.8), 0 0 26px -8px rgb(var(--iris-cyan-rgb) / 0.45);
+  --radius-button: 10px;
+  --button-outline: rgb(232 230 225 / 0.44);
+  --button-outline-hover: rgb(232 230 225 / 0.6);
+
+  /* The rainbow rim of the glass, for 1 px card borders: var(--iris-edge) on border-box behind a padding-box fill */
+  --iris-edge: linear-gradient(125deg, rgb(var(--iris-violet-rgb) / 0.75), rgb(var(--iris-cyan-rgb) / 0.45) 32%, rgb(255 255 255 / 0.14) 52%, rgb(var(--iris-amber-rgb) / 0.55) 76%, rgb(var(--iris-violet-rgb) / 0.55));
+  --iris-edge-hot: linear-gradient(125deg, var(--iris-violet), var(--iris-cyan) 32%, rgb(255 255 255 / 0.55) 52%, var(--iris-amber) 76%, var(--iris-violet));
+
+  /* Section dividers: a rainbow rule that fades at both ends, with a glass glow beneath */
+  --iris-rule: linear-gradient(90deg, transparent, rgb(var(--iris-violet-rgb) / 0.6) 16%, rgb(var(--iris-cyan-rgb) / 0.55) 38%, rgb(255 255 255 / 0.5) 50%, rgb(var(--iris-amber-rgb) / 0.55) 62%, rgb(var(--iris-violet-rgb) / 0.45) 84%, transparent);
+  --iris-rule-glow: radial-gradient(48% 100% at 50% 0%, rgb(var(--iris-violet-rgb) / 0.1), rgb(var(--iris-cyan-rgb) / 0.03) 55%, transparent 80%);
+
+  /* Glass: black with a faint sheen from above */
+  --glass: linear-gradient(180deg, rgb(255 255 255 / 0.055) 0%, rgb(255 255 255 / 0.018) 30%, rgb(255 255 255 / 0) 62%);
+
+  /* Home hero: an iridescent glow and sheen behind the headline, beneath the artwork */
+  --hero-glow:
+    radial-gradient(42% 46% at 24% 46%, rgb(var(--amethyst-rgb) / 0.13), transparent 70%),
+    radial-gradient(30% 34% at 38% 64%, rgb(var(--iris-cyan-rgb) / 0.06), transparent 70%),
+    radial-gradient(26% 30% at 10% 70%, rgb(var(--iris-amber-rgb) / 0.05), transparent 72%),
+    linear-gradient(118deg, transparent 34%, rgb(255 255 255 / 0.02) 46%, transparent 58%);
+
+  /* Opal: the bright rainbow edge of the glass, for the barrier line and its echoes */
+  --opal-line: linear-gradient(90deg, rgb(123 97 255 / 0) 0%, #7b61ff 6%, #5b8cff 17%, #5fe3ff 30%, #a3f7d6 40%, #fffaf0 50%, #ffe08a 60%, #ffb36b 71%, #ff7aa8 83%, #b46cff 94%, rgb(180 108 255 / 0) 100%);
+  --opal-edge: linear-gradient(90deg, #7b61ff, #5fe3ff 30%, #fffaf0 50%, #ffb36b 72%, #b46cff);
+  --opal-glow: 0 0 3px rgb(255 255 255 / 0.55), 0 0 12px rgb(var(--iris-violet-rgb) / 0.6), 0 0 34px rgb(var(--iris-cyan-rgb) / 0.22);
+  --opal-halo:
+    radial-gradient(26% 40% at 24% 50%, rgb(var(--iris-cyan-rgb) / 0.1), transparent 70%),
+    radial-gradient(26% 40% at 76% 50%, rgb(var(--iris-amber-rgb) / 0.09), transparent 70%),
+    radial-gradient(56% 46% at 50% 50%, rgb(var(--amethyst-rgb) / 0.28), rgb(var(--amethyst-rgb) / 0.07) 52%, transparent 74%),
+    linear-gradient(to bottom, transparent 42%, rgb(var(--amethyst-rgb) / 0.14) 50%, transparent 58%);
+  --hairline: rgb(232 230 225 / 0.1);
+  --hairline-strong: rgb(232 230 225 / 0.18);
+
+  /* The Katmai desktop app's accent, used where the site shows or downloads the app */
+  --app-blue: #c0dcff;
+  --app-blue-hover: #d9e9ff;
+  --app-ink: #0b1b33;
+
+  /* Layout: 4 columns on phones, 8 on iPad, 12 on desktop */
+  --radius-surface: 18px;
+  --nav-h: 64px;
+  --margin: 20px;
+  --gutter: 16px;
+  --cols: 4;
+  --max: 1440px;
+
+  /* Type scale. Body is 17px on phones and 18px from 768px up. Small text is for metadata
+     only (15px phones, 16px up). Nothing visible goes under --t-micro (14px). */
+  --t-micro: 0.875rem;
+  --t-small: 0.9375rem;
+  --t-body: 1.0625rem;
+  --t-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.3125rem);
+  --t-title: clamp(2rem, 1.35rem + 2.4vw, 3.75rem);
+  --t-display: clamp(2.6rem, 1.4rem + 4.6vw, 6rem);
+  --t-hero: min(clamp(3.25rem, 2rem + 5.6vw, 9rem), 13svh);
+
+  --lh-display: 0.98;
+  --lh-body: 1.55;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 72px;
+    --margin: 32px;
+    --gutter: 24px;
+    --cols: 8;
+    --t-small: 1rem;
+    --t-body: 1.125rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --margin: 48px;
+    --gutter: 24px;
+    --cols: 12;
+  }
+}

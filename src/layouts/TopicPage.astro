@@ -1,0 +1,319 @@
+---
+/**
+ * Every industry, technology and product page, from one Topic record.
+ * The story runs in a fixed order: the need today, why this approach wins
+ * (a chart and three reasons), how it works, where it stands, what BBD is
+ * building, and where to go next. Every number cites a numbered source.
+ */
+import Base from './Base.astro';
+import Button from '../components/Button.astro';
+import FieldBand from '../components/FieldBand.astro';
+import Logo from '../components/Logo.astro';
+import SectionHead from '../components/SectionHead.astro';
+import CtaBand from '../components/CtaBand.astro';
+import TopicScene from '../components/topic/TopicScene.astro';
+import StatRow from '../components/topic/StatRow.astro';
+import Chart from '../components/topic/Chart.astro';
+import Points from '../components/topic/Points.astro';
+import Flow from '../components/topic/Flow.astro';
+import Stage from '../components/topic/Stage.astro';
+import TopicCards from '../components/topic/TopicCards.astro';
+import SourceList from '../components/topic/SourceList.astro';
+import type { Topic } from '../content/topics/types';
+import { breadcrumbFor } from '../content/topics';
+import { buildRefs } from '../lib/cite';
+import { site } from '../config/site';
+
+interface Props {
+  topic: Topic;
+}
+
+const { topic } = Astro.props;
+const { refs, list } = buildRefs(topic);
+const crumbs = breadcrumbFor(topic);
+const { hero } = topic;
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((crumb, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: crumb.label,
+    item: new URL(crumb.href, site.url).href,
+  })),
+};
+---
+
+<Base title={topic.meta.title} description={topic.meta.description}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(breadcrumbLd)} />
+
+  <section class="topic-hero">
+    <div class="frame">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          {
+            crumbs.map((crumb, i) => (
+              <li>
+                {i === crumbs.length - 1 ? (
+                  <span aria-current="page">{crumb.label}</span>
+                ) : (
+                  <a href={crumb.href}>{crumb.label}</a>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+      <h1 class="topic-title">{hero.title}</h1>
+      <p class="topic-lead">{hero.lead}</p>
+      <div class="topic-actions">
+        <Button href={hero.actions.primary.href} size="lg">{hero.actions.primary.label}</Button>
+        {
+          hero.actions.secondary && (
+            <Button href={hero.actions.secondary.href} variant="secondary" size="lg">
+              {hero.actions.secondary.label}
+            </Button>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      'scene' in hero.visual ? (
+        <div class="topic-art">
+          <div class="frame">
+            <TopicScene scene={hero.visual.scene} caption={hero.caption} />
+          </div>
+        </div>
+      ) : (
+        <FieldBand scenes={hero.visual.band} caption={hero.caption} />
+      )
+    }
+  </section>
+
+  <section class="section" aria-labelledby="need-title">
+    <div class="frame stack-lg">
+      <SectionHead id="need-title" title={topic.need.title} intro={topic.need.intro} />
+      <StatRow stats={topic.need.stats} refs={refs} />
+    </div>
+  </section>
+
+  {
+    topic.children && (
+      <section class="section section--rule" aria-labelledby="missions">
+        <div class="frame stack-lg">
+          <SectionHead id="missions" title={topic.children.title} intro={topic.children.intro} />
+          <TopicCards slugs={topic.children.slugs} />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--deep" aria-labelledby="why-title">
+    <div class="frame stack-lg">
+      <SectionHead id="why-title" title={topic.why.title} intro={topic.why.intro} />
+      {topic.why.chart && <Chart chart={topic.why.chart} refs={refs} />}
+      <Points points={topic.why.points} refs={refs} />
+    </div>
+  </section>
+
+  <section class="section section--rule" aria-labelledby="how-it-works">
+    <div class="frame stack-lg">
+      <SectionHead id="how-it-works" title={topic.how.title} intro={topic.how.intro} />
+      <Flow steps={topic.how.steps} sequence={topic.how.sequence ?? true} />
+    </div>
+  </section>
+
+  {
+    topic.stage && (
+      <section class="section section--rule" aria-labelledby="stage-title">
+        <div class="frame stack-lg">
+          <SectionHead id="stage-title" title={topic.stage.title} />
+          <Stage level={topic.stage.level} text={topic.stage.text} milestones={topic.stage.milestones} refs={refs} />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--deep bbd" aria-labelledby="bbd-title">
+    <div class="frame bbd-grid">
+      <div>
+        <Logo size={28} class="bbd-mark" />
+        <h2 class="bbd-title" id="bbd-title">{topic.bbd.title}</h2>
+        <p class="bbd-text">{topic.bbd.text}</p>
+      </div>
+      <div>
+        <ul class="bbd-items">
+          {topic.bbd.items.map((item) => <li>{item}</li>)}
+        </ul>
+        {topic.bbd.note && <p class="bbd-note">{topic.bbd.note}</p>}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--rule" aria-labelledby="related-title">
+    <div class="frame stack-lg">
+      <SectionHead id="related-title" title="Go deeper" />
+      <TopicCards slugs={topic.related} />
+    </div>
+  </section>
+
+  {
+    list.length > 0 && (
+      <section class="section section--rule sources-section" aria-labelledby="sources-title">
+        <div class="frame stack-lg">
+          <SectionHead id="sources-title" title="Sources" intro="Where the numbers on this page come from." />
+          <SourceList list={list} />
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand title={topic.cta.title} text={topic.cta.text}>
+    <Button href={topic.cta.primary.href} size="lg">{topic.cta.primary.label}</Button>
+    {
+      topic.cta.secondary && (
+        <Button href={topic.cta.secondary.href} variant="secondary" size="lg">
+          {topic.cta.secondary.label}
+        </Button>
+      )
+    }
+  </CtaBand>
+</Base>
+
+<style>
+  .topic-hero {
+    padding-top: calc(var(--nav-h) + clamp(44px, 7vw, 96px));
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin: 0 10px;
+    color: rgb(139 143 152 / 0.6);
+  }
+
+  .crumbs a {
+    color: var(--color-pumice);
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--color-ash);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .crumbs [aria-current] {
+    color: var(--color-amber);
+  }
+
+  .topic-title {
+    margin-top: 20px;
+    max-width: 13em;
+    font-size: clamp(2.9rem, 1.7rem + 4.8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.014em;
+  }
+
+  .topic-lead {
+    margin-top: 26px;
+    max-width: 46ch;
+    font-size: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);
+    line-height: 1.5;
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .topic-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 34px;
+    padding-bottom: clamp(48px, 6vw, 80px);
+  }
+
+  .topic-art {
+    padding-block: clamp(28px, 4vw, 56px) clamp(56px, 6vw, 88px);
+    border-block: 1px solid var(--hairline);
+    background: radial-gradient(70% 90% at 50% 40%, rgb(17 24 34 / 0.9), var(--color-obsidian) 70%);
+  }
+
+  .topic-art .frame {
+    max-width: 1280px;
+  }
+
+  .bbd-grid {
+    display: grid;
+    gap: 40px var(--gutter);
+  }
+
+  @media (min-width: 960px) {
+    .bbd-grid {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      align-items: end;
+    }
+  }
+
+  .bbd :global(.bbd-mark) {
+    color: var(--color-white);
+  }
+
+  .bbd-title {
+    margin-top: 22px;
+    font-size: var(--t-title);
+  }
+
+  .bbd-text {
+    margin-top: 18px;
+    max-width: 44ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .bbd-items {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .bbd-items li {
+    position: relative;
+    padding: 14px 0 14px 26px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 1.0625rem;
+    color: rgb(232 230 225 / 0.88);
+  }
+
+  .bbd-items li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 1.45em;
+    width: 12px;
+    height: 1px;
+    background: var(--color-amber);
+  }
+
+  .bbd-note {
+    margin-top: 16px;
+    font-size: 0.9375rem;
+    color: var(--color-pumice);
+  }
+
+  .sources-section {
+    padding-bottom: clamp(56px, 6vw, 96px);
+  }
+</style>

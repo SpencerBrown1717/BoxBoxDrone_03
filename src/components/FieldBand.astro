@@ -1,0 +1,57 @@
+---
+/**
+ * The live subsurface field as a full-bleed band, for inner page heroes.
+ * Hidden from assistive technology; the page tells the same story in text.
+ */
+import type { FieldScene } from '../scripts/field';
+
+interface Props {
+  scenes: FieldScene[];
+  interval?: number;
+  ground?: number;
+  caption?: string;
+}
+
+const { scenes, interval = 7500, ground = 0.18, caption } = Astro.props;
+---
+
+<figure class="band" data-field-band data-scenes={scenes.join(',')} data-interval={interval} data-ground={ground}>
+  <canvas aria-hidden="true"></canvas>
+  {caption && <figcaption class="visually-hidden">{caption}</figcaption>}
+  <button class="band-toggle button button--secondary button--sm" type="button" data-motion-toggle hidden>Pause motion</button>
+</figure>
+
+<script>
+  import { mountBands } from '../scripts/band';
+  mountBands();
+</script>
+
+<style>
+  .band {
+    position: relative;
+    height: clamp(340px, 58svh, 640px);
+    margin: 0;
+    border-block: 1px solid var(--hairline);
+    background: var(--color-obsidian);
+    overflow: hidden;
+  }
+
+  .band canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .band-toggle {
+    position: absolute;
+    right: var(--margin);
+    bottom: 16px;
+  }
+
+  .band-toggle[hidden] {
+    display: none;
+  }
+
+</style>
