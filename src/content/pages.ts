@@ -12,7 +12,7 @@ export const company = {
   meta: {
     title: 'About BoxBox Drone',
     description:
-      'BoxBox Drone (BBD) builds AI models for drones and the low-cost aircraft they fly on. Based in Palo Alto, California, and incubated at Harvard Innovation Labs.',
+      'BoxBox Drone (BBD) builds AI models for drones and the low-cost aircraft they fly on. Based in Palo Alto, California.',
   },
   hero: {
     eyebrow: 'Company',
@@ -45,7 +45,7 @@ export const company = {
   why: {
     title: 'Why we exist.',
     text: 'America fell behind in drones. We think software is how it wins: drive the cost of the hardware toward zero, then fly every drone better than anyone else.',
-    facts: ['Based in Palo Alto, California', 'Incubated at Harvard Innovation Labs', 'Founded by Spencer Brown'],
+    facts: ['Based in Palo Alto, California'],
   },
   cta: {
     title: 'Talk to us.',
