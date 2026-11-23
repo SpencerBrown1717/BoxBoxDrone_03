@@ -1,16 +1,17 @@
 ---
 /**
  * Primary navigation. One tree at every size:
- * - Wide: three menus open full-width mega panels (native popovers), with hover preview.
+ * - Wide: two menus open full-width mega panels (native popovers), with hover preview.
  * - Narrow: a drawer, where each menu is a disclosure listing its pages.
  * Without script, the drawer shows every link expanded.
  */
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
+import MiniScene from './MiniScene.astro';
 import Button from './Button.astro';
-import TopicScene from './topic/TopicScene.astro';
 import { tabs, links } from '../content/nav';
 import { topics } from '../content/topics';
+import { site } from '../config/site';
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
@@ -22,9 +23,9 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
 
 <header class="site-header" data-site-header>
   <div class="header-inner">
-    <a class="brand" href="/" aria-label="BBD home">
+    <a class="brand" href="/" aria-label={`${site.name} home`}>
       <Logo size={22} class="brand-mark" />
-      <span class="brand-name"><b>BBD</b><span class="brand-full">BoxBox Drone</span></span>
+      <span class="brand-name">{site.name}</span>
     </a>
 
     <nav class="site-nav" aria-label="Primary">
@@ -68,7 +69,7 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
                           {tab.allLabel}
                         </a>
                         <div class="mega-scene">
-                          <TopicScene scene={tab.scene} thumb />
+                          <MiniScene scene={tab.scene} />
                         </div>
                       </div>
 
@@ -127,13 +128,13 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
             </li>
           ))
         }
-        <li class="menu-preorder">
-          <Button href="/contact" size="lg">Talk to us</Button>
+        <li class="menu-cta">
+          <Button href={site.contactUrl} size="lg" data-cta="menu">Talk to us</Button>
         </li>
       </ul>
     </nav>
 
-    <Button href="/contact" size="sm" class="nav-preorder">Talk to us</Button>
+    <Button href={site.contactUrl} size="sm" class="nav-cta" data-cta="nav">Talk to us</Button>
   </div>
 </header>
 
@@ -189,7 +190,7 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
     anchor-name: --menu-button;
   }
 
-  .nav-preorder {
+  .nav-cta {
     margin-inline-start: 4px;
   }
 
@@ -356,14 +357,14 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
     transition: color 0.2s;
   }
 
-  .menu-preorder {
+  .menu-cta {
     padding-top: 24px;
   }
 
   /* ---------- Wide: tabs in the header, full-width mega menus ---------- */
 
   .site-header:global(.is-wide) .menu-button,
-  .site-header:global(.is-wide) .menu-preorder {
+  .site-header:global(.is-wide) .menu-cta {
     display: none;
   }
 
@@ -685,21 +686,8 @@ const section = topics.find((topic) => topic.slug === slug)?.section ?? slug;
     transition: none !important;
   }
 
-  .brand-name b {
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-
-  .brand-full {
-    margin-left: 10px;
-    padding-left: 10px;
-    border-left: 1px solid var(--hairline-strong);
-    color: rgb(232 230 225 / 0.72);
-    font-weight: 400;
-  }
-
-  @media (max-width: 520px) {
-    .brand-full {
+  @media (max-width: 420px) {
+    .brand-name {
       display: none;
     }
   }

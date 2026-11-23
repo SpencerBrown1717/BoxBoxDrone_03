@@ -1,5 +1,5 @@
 #!/bin/bash
-# Check a deployment's security headers with curl, like securityheaders.com.
+# Check a deployment's security headers and redirects with curl, like securityheaders.com.
 # Usage: scripts/check-security-headers.sh [base-url]     (default https://www.boxboxdrone.com)
 # For a protected Vercel preview, export VERCEL_AUTOMATION_BYPASS_SECRET first; it is sent as the
 # x-vercel-protection-bypass header and never printed.
@@ -72,12 +72,27 @@ check_page() {
   [ "$value" = "same-origin" ] && pass "Cross-Origin-Opener-Policy: same-origin" || fail "Cross-Origin-Opener-Policy should be same-origin (got: ${value:-none})"
 }
 
-for path in / /delivery /drako /contact /favicon.svg; do check_page "$path"; done
+check_redirect() {
+  local path="$1" want="$2" headers status location
+  headers=$(curl "${curl_args[@]}" -o /dev/null -D - "$base$path")
+  status=$(printf '%s\n' "$headers" | head -1 | awk '{print $2}')
+  location=$(header "$headers" location)
+  if [ "$status" = "308" ] && [ "$location" = "$want" ]; then
+    pass "$path -> $location"
+  else
+    fail "$path should 308 to $want (got: $status ${location:-no location})"
+  fi
+}
+
+for path in / /drako /models /contact /favicon.svg; do check_page "$path"; done
+
+echo "== redirects"
+check_redirect /drako-drones /drako
 
 case "$base" in
   https://*)
     echo "== http to https"
-    insecure="http://${base#https://}/delivery"
+    insecure="http://${base#https://}/"
     headers=$(curl "${curl_args[@]}" -o /dev/null -D - "$insecure")
     location=$(header "$headers" location)
     case "$location" in

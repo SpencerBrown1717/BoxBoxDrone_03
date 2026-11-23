@@ -2,26 +2,24 @@
  * Site-wide settings. Change these values, not the components.
  */
 export const site = {
-  /** The short name, used in page titles and the header. */
-  name: 'BBD',
-  /** The full name, said once in the footer and the company page. */
-  legalName: 'BoxBox Drone',
+  name: 'BoxBox Drone',
+  short: 'BBD',
   url: 'https://www.boxboxdrone.com',
-  title: 'BBD: AI models for drones',
+  title: 'BoxBox Drone: AI Models for Drones',
   description:
-    'BBD builds AI models for drones: last-mile delivery drones, Drako training drones and drone show software, all flown by one world action model. Based in Palo Alto, California.',
-  mission: 'AI models for drones.',
+    'BoxBox Drone (BBD) builds AI models for drones: a world action model trained for every environment, specialized for last-mile delivery, Drako training targets and drone shows. Based in Palo Alto.',
+  mission: 'AI models for drones, on hardware that costs next to nothing.',
   locality: 'Palo Alto',
   region: 'California',
   country: 'US',
 
   /**
-   * Where every "Talk to us" message goes.
-   * Confirm this inbox exists before launch; change it here and every link follows.
+   * Where every contact button leads. Each topic gets its own subject line on /contact.
+   * The inbox must exist before launch: hello@boxboxdrone.com.
    */
   email: 'hello@boxboxdrone.com',
+  contactUrl: '/contact',
 } as const;
 
-/** A mailto link with a subject line, for the contact topics. */
-export const mailto = (subject?: string) =>
-  subject ? `mailto:${site.email}?subject=${encodeURIComponent(subject)}` : `mailto:${site.email}`;
+/** A contact link for one topic, for example `contactHref('drako')`. */
+export const contactHref = (topic?: string) => (topic ? `${site.contactUrl}?topic=${topic}` : site.contactUrl);

@@ -1,30 +1,30 @@
 /**
- * Field bands: the live subsurface field as a hero visual on inner pages.
- * Each band plays one or more scenes (for example the submarine, then the tunnel).
+ * Sky bands: the live sky as a hero visual on inner pages.
+ * Each band plays one or more scenes (for example delivery, then the same deliveries in weather).
  */
-import { createField, type FieldScene } from './field';
-import { fieldLabels } from '../content/home';
+import { createSky, type SkyScene } from './sky';
+import { skyLabels } from '../content/home';
 import { isPaused, onMotionChange, wireToggle } from './motion';
 
 export function mountBands() {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  document.querySelectorAll<HTMLElement>('[data-field-band]').forEach((band) => {
+  document.querySelectorAll<HTMLElement>('[data-sky-band]').forEach((band) => {
     if (band.dataset.mounted) return;
     band.dataset.mounted = 'true';
     const canvas = band.querySelector<HTMLCanvasElement>('canvas');
     if (!canvas) return;
 
-    let field: ReturnType<typeof createField>;
+    let sky: ReturnType<typeof createSky>;
     try {
-      field = createField(canvas, { reducedMotion: reduced, labels: fieldLabels });
+      sky = createSky(canvas, { reducedMotion: reduced, labels: skyLabels });
     } catch {
       return;
     }
 
-    const scenes = (band.dataset.scenes ?? 'surface').split(',') as FieldScene[];
-    const interval = Number(band.dataset.interval ?? 7000);
-    const groundShare = Number(band.dataset.ground ?? 0.18);
+    const scenes = (band.dataset.scenes ?? 'swarm').split(',') as SkyScene[];
+    const interval = Number(band.dataset.interval ?? 8000);
+    const groundShare = Number(band.dataset.ground ?? 0.86);
     let index = 0;
     let size = '';
 
@@ -34,25 +34,25 @@ export function mountBands() {
       const key = `${w}x${h}`;
       if (key === size) return;
       size = key;
-      field.layout(w, h, Math.round(h * groundShare));
+      sky.layout(w, h, Math.round(h * groundShare));
     };
 
     new ResizeObserver(layout).observe(band);
     layout();
-    field.setScene(scenes[0]);
-    if (isPaused()) field.setPaused(true);
+    sky.jumpTo(scenes[0]);
+    if (isPaused()) sky.setPaused(true);
 
-    new IntersectionObserver(([entry]) => field.setActive(entry.isIntersecting), { rootMargin: '80px' }).observe(band);
+    new IntersectionObserver(([entry]) => sky.setActive(entry.isIntersecting), { rootMargin: '80px' }).observe(band);
 
     if (scenes.length > 1 && !reduced) {
       window.setInterval(() => {
         if (isPaused() || document.hidden) return;
         index = (index + 1) % scenes.length;
-        field.setScene(scenes[index]);
+        sky.setScene(scenes[index]);
       }, interval);
     }
 
-    onMotionChange((paused) => field.setPaused(paused));
+    onMotionChange((paused) => sky.setPaused(paused));
     if (!reduced) wireToggle(band.querySelector<HTMLButtonElement>('[data-motion-toggle]'));
   });
 }

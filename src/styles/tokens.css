@@ -1,10 +1,11 @@
 /*
-  Katmai design tokens.
-  Named for materials, after Mount Katmai: obsidian, graphite, ash, pumice, basalt and glacier,
-  plus amethyst, amber and opal from the iridescent glass in the Katmai app's artwork.
-  Amethyst is for buying and primary actions. Amber is for labels and wayfinding.
-  Glacier is reserved for the quantum signal. Opal is the rainbow edge of the glass: the barrier line and glass edges.
-  Iris is the glass itself: light iridescent primary buttons with dark ink, rainbow card rims and section rules.
+  BBD design tokens, borrowed from the Katmai system on purpose: the same night sky,
+  the same type, the same iridescent glass.
+  Obsidian is the night, ash and pumice are text, basalt is the ground at the horizon.
+  Amethyst is for primary actions. Amber is for labels and wayfinding, and for hits on the Drako range.
+  Glacier is reserved for the flight signal: drones, routes and what the model predicts.
+  Opal is the rainbow edge of the glass: the cost line on the home page.
+  Iris is the glass itself: light iridescent primary buttons with dark ink.
   Surfaces are true black; glass adds only a faint sheen from above.
 */
 @theme static {
@@ -14,8 +15,6 @@
   --color-pumice: #8b8f98;
   --color-amethyst: #6f52ff;
   --color-amber: #f2b66b;
-  /* Older name for the action color, kept so other branches keep working */
-  --color-cobalt: #6f52ff;
   --color-glacier: #6ee7f9;
   --color-basalt: #2b221d;
   --color-black: #000000;
@@ -45,6 +44,8 @@
   --amethyst-rgb: 111 82 255;
   --amethyst-hot-rgb: 196 181 255;
   --amber-rgb: 242 182 107;
+  --glacier-rgb: 110 231 249;
+  --ash-rgb: 232 230 225;
 
   /* Iridescence: the violet, cyan and warm amber of the glass in the Katmai art */
   --iris-violet: #b9a6ff;
@@ -77,14 +78,14 @@
   /* Glass: black with a faint sheen from above */
   --glass: linear-gradient(180deg, rgb(255 255 255 / 0.055) 0%, rgb(255 255 255 / 0.018) 30%, rgb(255 255 255 / 0) 62%);
 
-  /* Home hero: an iridescent glow and sheen behind the headline, beneath the artwork */
+  /* Home hero: an iridescent glow and sheen behind the headline */
   --hero-glow:
     radial-gradient(42% 46% at 24% 46%, rgb(var(--amethyst-rgb) / 0.13), transparent 70%),
     radial-gradient(30% 34% at 38% 64%, rgb(var(--iris-cyan-rgb) / 0.06), transparent 70%),
     radial-gradient(26% 30% at 10% 70%, rgb(var(--iris-amber-rgb) / 0.05), transparent 72%),
     linear-gradient(118deg, transparent 34%, rgb(255 255 255 / 0.02) 46%, transparent 58%);
 
-  /* Opal: the bright rainbow edge of the glass, for the barrier line and its echoes */
+  /* Opal: the bright rainbow edge of the glass, for the cost line and its echoes */
   --opal-line: linear-gradient(90deg, rgb(123 97 255 / 0) 0%, #7b61ff 6%, #5b8cff 17%, #5fe3ff 30%, #a3f7d6 40%, #fffaf0 50%, #ffe08a 60%, #ffb36b 71%, #ff7aa8 83%, #b46cff 94%, rgb(180 108 255 / 0) 100%);
   --opal-edge: linear-gradient(90deg, #7b61ff, #5fe3ff 30%, #fffaf0 50%, #ffb36b 72%, #b46cff);
   --opal-glow: 0 0 3px rgb(255 255 255 / 0.55), 0 0 12px rgb(var(--iris-violet-rgb) / 0.6), 0 0 34px rgb(var(--iris-cyan-rgb) / 0.22);
@@ -95,11 +96,6 @@
     linear-gradient(to bottom, transparent 42%, rgb(var(--amethyst-rgb) / 0.14) 50%, transparent 58%);
   --hairline: rgb(232 230 225 / 0.1);
   --hairline-strong: rgb(232 230 225 / 0.18);
-
-  /* The Katmai desktop app's accent, used where the site shows or downloads the app */
-  --app-blue: #c0dcff;
-  --app-blue-hover: #d9e9ff;
-  --app-ink: #0b1b33;
 
   /* Layout: 4 columns on phones, 8 on iPad, 12 on desktop */
   --radius-surface: 18px;

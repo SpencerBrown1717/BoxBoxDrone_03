@@ -1,18 +1,19 @@
 ---
 /**
  * Scenes 1 and 2. Two copies of the same layout sit on top of each other:
- * "then" (the last mile on the road) and "now" (the last mile, flown).
- * The glowing line is the boundary between them. Everything above it is now,
+ * "then" (drones as a hardware race) and "now" (AI models for drones).
+ * The cost line is the boundary between them. Everything above it is now,
  * everything below it is still then, so as it sweeps down the screen it rewrites
- * the headline and every rung of the scale. When it lands it becomes the ground
- * line the field is drawn under.
+ * the headline and every row of the scale. It lands on the floor and becomes the
+ * horizon the sky is drawn above.
  *
  * Without script, or with reduced motion, only the finished "now" frame shows,
  * with the line at the floor.
  */
 import Button from './Button.astro';
-import HeroRoutes from './HeroRoutes.astro';
+import SkyArt from './SkyArt.astro';
 import { hero } from '../content/home';
+import { site } from '../config/site';
 ---
 
 <div class="hero" data-hero>
@@ -33,7 +34,7 @@ import { hero } from '../content/home';
               </div>
             </div>
           </div>
-          <ol class="scale" aria-label="What the last mile has taken">
+          <ol class="scale" aria-label="What drones have needed">
             {
               hero.scale.map((row) => (
                 <li class="scale-row">
@@ -51,7 +52,9 @@ import { hero } from '../content/home';
 
     <div class="layer layer--now" data-layer="now">
       <div class="layer-inner" data-layer-inner>
-        <HeroRoutes />
+        <div class="hero-art" aria-hidden="true">
+          <SkyArt />
+        </div>
         <div class="hero-grid">
           <div class="hero-copy">
             <div class="copy-stack">
@@ -63,12 +66,12 @@ import { hero } from '../content/home';
                 <h1 class="hero-headline">{hero.now.headline}</h1>
                 <p class="hero-support">{hero.now.support}</p>
                 <div class="hero-cta" data-hero-cta>
-                  <Button href="/contact" size="lg">{hero.now.cta}</Button>
+                  <Button href={site.contactUrl} size="lg" data-cta="hero">{hero.now.cta}</Button>
                 </div>
               </div>
             </div>
           </div>
-          <ol class="scale" aria-label="What it takes now">
+          <ol class="scale" aria-label="What BBD changes">
             {
               hero.scale.map((row) => (
                 <li class="scale-row">
@@ -121,6 +124,20 @@ import { hero } from '../content/home';
   /* The lit world carries an iridescent glow and sheen behind the headline */
   .layer--now > .layer-inner {
     background: var(--hero-glow);
+  }
+
+  /* The lit world: a plane of drones receding to the horizon where the line lands.
+     Decorative, behind the copy, faded toward the top so text stays clear. */
+  .hero-art {
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    right: 0;
+    bottom: var(--floor-gap);
+    height: 78%;
+    pointer-events: none;
+    opacity: 0.85;
+    mask-image: linear-gradient(to top, black 0%, black 34%, transparent 92%);
   }
 
   .layer--then {

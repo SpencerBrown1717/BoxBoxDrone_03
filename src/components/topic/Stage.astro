@@ -1,7 +1,8 @@
 ---
 /**
- * Where a technology stands: an ordinal track from lab to widespread use, with
- * the current stage marked, and the dated milestones behind that judgment.
+ * Where things stand: an ordinal track from lab to widespread use, with the
+ * current stage marked, and the dated milestones behind that judgment.
+ * Without a level it is a plain timeline.
  */
 import type { Milestone } from '../../content/topics/types';
 import type { Refs } from '../../lib/cite';
@@ -9,7 +10,7 @@ import { stageNames } from '../../content/topics/shared';
 import Cite from './Cite.astro';
 
 interface Props {
-  level: 0 | 1 | 2 | 3;
+  level?: 0 | 1 | 2 | 3;
   text: string;
   milestones: Milestone[];
   refs: Refs;
@@ -20,16 +21,18 @@ const { level, text, milestones, refs } = Astro.props;
 
 <div class="stage">
   <div class="stage-head">
-    <ol class="track" aria-label={`Stage: ${stageNames[level]}`}>
-      {
-        stageNames.map((name, i) => (
-          <li class:list={['track-step', i < level && 'is-past', i === level && 'is-now']} aria-current={i === level ? 'step' : undefined}>
-            <span class="track-dot" aria-hidden="true" />
-            <span class="track-name">{name}</span>
-          </li>
-        ))
-      }
-    </ol>
+    {
+      level !== undefined && (
+        <ol class="track" aria-label={`Stage: ${stageNames[level]}`}>
+          {stageNames.map((name, i) => (
+            <li class:list={['track-step', i < level && 'is-past', i === level && 'is-now']} aria-current={i === level ? 'step' : undefined}>
+              <span class="track-dot" aria-hidden="true" />
+              <span class="track-name">{name}</span>
+            </li>
+          ))}
+        </ol>
+      )
+    }
     <p class="stage-text">{text}</p>
   </div>
 
@@ -130,6 +133,13 @@ const { level, text, milestones, refs } = Astro.props;
 
   .stage-text {
     margin-top: 28px;
+  }
+
+  .stage-head > .stage-text:first-child {
+    margin-top: 0;
+  }
+
+  .stage-text {
     max-width: 46ch;
     font-size: var(--t-lead);
     line-height: 1.55;

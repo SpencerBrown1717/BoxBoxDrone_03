@@ -4,8 +4,10 @@
  * src/content/topics, so the menus can't drift from the pages they open.
  */
 import type { IconName } from '../components/icon-paths';
-import type { SceneName } from './topics/types';
+import { contactHref } from '../config/site';
 import { cardFor } from './topics';
+
+export type MiniSceneName = 'delivery' | 'drako' | 'shows' | 'model';
 
 /** A main page in a menu: icon, title and one line. */
 export interface NavItem {
@@ -28,13 +30,13 @@ export interface NavGroup {
 }
 
 export interface NavTab {
-  id: 'products' | 'technology';
+  id: 'missions' | 'technology';
   label: string;
   href: string;
   headline: string;
   description: string;
   allLabel: string;
-  scene: SceneName;
+  scene: MiniSceneName;
   items: NavItem[];
   groups: NavGroup[];
   note: string;
@@ -48,52 +50,53 @@ const item = (slug: string): NavItem => {
 
 export const tabs: NavTab[] = [
   {
-    id: 'products',
-    label: 'Products',
-    href: '/products',
-    headline: 'One model, three ways to fly.',
-    description: 'Last-mile delivery, Drako training drones and drone show software.',
-    allLabel: 'All products',
+    id: 'missions',
+    label: 'Missions',
+    href: '/missions',
+    headline: 'Three missions, one model.',
+    description: 'Last-mile delivery, Drako training targets and drone shows, all flown by the BBD model.',
+    allLabel: 'All missions',
     scene: 'delivery',
     items: ['delivery', 'drako', 'shows'].map(item),
     groups: [
       {
         title: 'Get started',
         links: [
-          { title: 'Start a delivery pilot', href: '/contact#delivery', icon: 'package' },
-          { title: 'Plan a Drako exercise', href: '/contact#drako', icon: 'flag' },
-          { title: 'Plan a show', href: '/contact#shows', icon: 'sparkle' },
+          { title: 'Request Drako targets', href: contactHref('drako'), icon: 'target' },
+          { title: 'Bring delivery to your town', href: contactHref('delivery'), icon: 'package' },
+          { title: 'Plan a show', href: contactHref('shows'), icon: 'sparkle' },
         ],
       },
     ],
-    note: 'Every BBD product runs on the same world action model.',
+    note: 'Each page shows the need in numbers, where things stand and what BBD is building.',
     cta: { label: 'Talk to us', href: '/contact' },
   },
   {
     id: 'technology',
     label: 'Technology',
     href: '/technology',
-    headline: 'AI models for drones.',
-    description: 'A world action model trained for every environment, with a specialist for each job.',
+    headline: 'The model is the product.',
+    description: 'A world action model trained for every environment, on aircraft that cost next to nothing.',
     allLabel: 'All technology',
-    scene: 'wam',
-    items: ['wam', 'models'].map(item),
+    scene: 'model',
+    items: ['models', 'hardware'].map(item),
     groups: [
       {
-        title: 'Learn more',
+        title: 'The model',
         links: [
-          { title: 'Why now', href: '/why-now', icon: 'tag' },
-          { title: 'Talk to the team', href: '/contact#engineering', icon: 'message' },
+          { title: 'How it’s specialized', href: '/models#specialists', icon: 'target' },
+          { title: 'How we plan to beat the field', href: '/models#plan', icon: 'chart' },
+          { title: 'How it learns', href: '/models#how-it-works', icon: 'layers' },
         ],
       },
     ],
-    note: 'Simulation first. Real flights settle it.',
-    cta: { label: 'Talk to the team', href: '/contact#engineering' },
+    note: 'Each page lists the sources behind its numbers.',
+    cta: { label: 'Fly our model', href: contactHref('models') },
   },
 ];
 
 /** Plain links after the menus */
 export const links = [
-  { label: 'Why now', href: '/why-now' },
+  { label: 'Why America', href: '/why-america' },
   { label: 'Company', href: '/company' },
 ];

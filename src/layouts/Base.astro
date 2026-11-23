@@ -30,10 +30,8 @@ const jsonLd = {
       '@id': `${site.url}/#organization`,
       name: site.name,
       url: `${site.url}/`,
-      alternateName: site.legalName,
       logo: `${site.url}/logo/bbd-mark-512.png`,
       description: site.description,
-      email: site.email,
       address: {
         '@type': 'PostalAddress',
         addressLocality: site.locality,
@@ -85,7 +83,7 @@ const jsonLd = {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="The BBD drone mark and the words AI models for drones, above a glowing horizon line." />
+    <meta property="og:image:alt" content="The BoxBox Drone mark and the words AI models for drones, above a glowing rainbow line and a sky of drones." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />

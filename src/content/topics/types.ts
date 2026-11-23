@@ -1,6 +1,6 @@
 /**
- * The shape of every product, technology and company page. Each page is data:
- * the layout in src/layouts/TopicPage.astro renders it in a fixed order.
+ * The shape of every mission and technology page. Each page is data: the layout
+ * in src/layouts/TopicPage.astro renders it in a fixed order.
  *
  * Copy rules (CLAUDE.md): sentence case, plain verbs, no dashes or arrows,
  * capability-level claims only. Every number cites a source by id.
@@ -8,11 +8,11 @@
  * sits under a `// sign-off` marker.
  */
 import type { IconName } from '../../components/icon-paths';
-import type { FieldScene } from '../../scripts/field';
+import type { SkyScene } from '../../scripts/sky';
 
-export type SceneName = 'delivery' | 'wam' | 'drako' | 'shows' | 'models' | 'america';
+export type SceneName = 'delivery' | 'drako' | 'shows' | 'wam' | 'hardware' | 'gap';
 
-export type Section = 'products' | 'technology' | 'company';
+export type Section = 'missions' | 'technology' | 'company';
 
 /** A cited source. Pages number their sources in order of first use. */
 export interface Source {
@@ -50,11 +50,10 @@ export interface Milestone extends Cited {
 }
 
 /**
- * Signal (glacier) marks BBD's own model and flights. Highlight (ash) is the emphasis
- * color for everything else. Classical and context are the two grays.
- * The name 'quantum' is kept from the shared chart code; it means the signal color.
+ * Signal (glacier) marks drones, flight and BBD. Highlight (ash) is the emphasis
+ * color for everything else. Other and context are the two grays.
  */
-export type Tone = 'quantum' | 'highlight' | 'classical' | 'context';
+export type Tone = 'signal' | 'highlight' | 'other' | 'context';
 
 export type Format = 'number' | 'year' | 'power' | 'percent';
 
@@ -135,7 +134,7 @@ export interface Link {
 }
 
 export interface Topic {
-  /** The route, without slashes at either end: 'defense' or 'defense/undersea'. */
+  /** The route, without slashes at either end: 'drako' or 'models'. */
   slug: string;
   section: Section;
   /** For sub-pages: the slug of the page above, for the breadcrumb. */
@@ -147,21 +146,36 @@ export interface Topic {
     kicker: string;
     title: string;
     lead: string;
-    /** A drawn scene, or the live field band used on the home page. */
-    visual: { scene: SceneName } | { band: FieldScene[] };
+    /** A drawn scene, or the live sky band used on the home page. */
+    visual: { scene: SceneName } | { band: SkyScene[] };
     caption: string;
     actions: { primary: Link; secondary?: Link };
   };
   need: { title: string; intro: string; stats: Stat[] };
-  /** Sub-pages, listed after the need on overview pages. */
-  children?: { title: string; intro: string; slugs: string[] };
+  /** Related pages listed right after the need. */
+  children?: { id?: string; title: string; intro: string; slugs: string[] };
+  /** The specialist models, one row each: what it does and what it learns from. */
+  specialists?: {
+    id: string;
+    title: string;
+    intro: string;
+    items: { name: string; mission: string; href: string; does: string; learns: string }[];
+  };
   why: { title: string; intro: string; chart?: Chart; points: Point[] };
+  /** Side by side: where the field is today against what BBD is building. */
+  compare?: {
+    id: string;
+    title: string;
+    intro: string;
+    columns: [string, string];
+    rows: { label: string; field: string; bbd: string }[];
+  };
   /** Numbered when the steps are a sequence; a plain grid when they are parts. */
   how: { title: string; intro: string; steps: Step[]; sequence?: boolean };
   stage?: {
     title: string;
-    /** 0 Lab, 1 Field trials, 2 Early commercial, 3 Widespread */
-    level: 0 | 1 | 2 | 3;
+    /** 0 Lab, 1 Field trials, 2 Early commercial, 3 Widespread. Leave out for a plain timeline. */
+    level?: 0 | 1 | 2 | 3;
     text: string;
     milestones: Milestone[];
   };

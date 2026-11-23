@@ -1,0 +1,84 @@
+---
+/**
+ * The specialist models: one row each, with what it does and what it learns from.
+ */
+interface Props {
+  items: { name: string; mission: string; href: string; does: string; learns: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="specialists">
+  {
+    items.map((item) => (
+      <article class="specialist">
+        <h3 class="specialist-title">{item.name}</h3>
+        <div class="specialist-body">
+          <p class="specialist-text">{item.does}</p>
+          <p class="specialist-learns">
+            <span>Learns from</span>
+            {item.learns}
+          </p>
+          <p class="specialist-link">
+            <a class="text-link" href={item.href}>
+              About {item.mission}
+            </a>
+          </p>
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .specialists {
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .specialist {
+    display: grid;
+    gap: 18px;
+    padding-block: clamp(32px, 4vw, 52px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  @media (min-width: 900px) {
+    .specialist {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--gutter);
+    }
+  }
+
+  .specialist-title {
+    font-size: clamp(2.25rem, 1.7rem + 2vw, 3.5rem);
+  }
+
+  .specialist-text {
+    max-width: 52ch;
+    font-size: var(--t-lead);
+    line-height: 1.55;
+    color: rgb(232 230 225 / 0.84);
+  }
+
+  .specialist-learns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: baseline;
+    margin-top: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-glacier);
+  }
+
+  .specialist-learns span {
+    font-family: var(--font-sans);
+    color: var(--color-pumice);
+  }
+
+  .specialist-link {
+    margin-top: 14px;
+    font-size: 0.9375rem;
+  }
+</style>

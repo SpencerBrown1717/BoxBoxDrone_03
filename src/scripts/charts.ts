@@ -14,9 +14,9 @@ interface LineData {
 }
 
 const toneVar: Record<string, string> = {
-  quantum: 'var(--quantum)',
+  signal: 'var(--signal)',
   highlight: 'var(--highlight)',
-  classical: 'var(--classical)',
+  other: 'var(--other)',
   context: 'var(--context)',
 };
 

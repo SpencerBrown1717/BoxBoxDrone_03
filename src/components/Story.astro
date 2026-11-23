@@ -1,41 +1,55 @@
 ---
 /**
- * The home story in one continuous stage: the line sweeps down and rewrites the
- * hero, settles into the ground line, and the field below it plays each scene
- * as its copy scrolls by: delivery, the world action model, Drako, shows and
- * the specialized models.
+ * The home story in one continuous stage: the cost line drops and becomes the
+ * horizon, and the sky above it plays each scene as its copy scrolls by.
  *
  * Two modes:
  * - Animated (default when motion is allowed): one sticky stage holds the line
- *   and the field; the scroll drives the choreography.
+ *   and the sky; the scroll drives the choreography.
  * - Still (no script, or reduced motion): the finished hero frame, then a sticky
- *   field that changes its picture per scene, with no motion.
+ *   sky that changes its picture per scene, with no motion.
  */
 import Barrier from './Barrier.astro';
-import Field from './Field.astro';
+import SkyField from './SkyField.astro';
 import SectorScene from './SectorScene.astro';
-import { scenes } from '../content/home';
+import ModelPanel from './ModelPanel.astro';
+import { sky, missions } from '../content/home';
+
+// The story opens on delivery, then shows the model that flies it, then the other missions
+const [lead, ...rest] = missions;
+const blocks = [lead, 'model', ...rest] as const;
 ---
 
 <section class="story" data-story aria-label="What BBD builds">
   <div class="stage" data-stage>
-    <Field />
+    <SkyField />
     <Barrier />
     <button class="motion-toggle button button--secondary button--sm" type="button" data-motion-toggle hidden>Pause motion</button>
   </div>
 
   <div class="track" data-track>
     <div class="hero-spacer" data-hero-spacer aria-hidden="true"></div>
+    <SectorScene id={sky.id} scene="swarm" headline={sky.headline} support={sky.support} />
     {
-      scenes.map((scene) => (
-        <SectorScene id={scene.id} scene={scene.scene} eyebrow={scene.eyebrow} headline={scene.headline} support={scene.support}>
-          <a class="scene-link text-link" href={scene.link.href}>
-            {scene.link.label}
-          </a>
-        </SectorScene>
-      ))
+      blocks.map((block) =>
+        block === 'model' ? (
+          <ModelPanel />
+        ) : (
+          <SectorScene
+            id={block.id}
+            scene={block.scene}
+            eyebrow={block.eyebrow}
+            headline={block.headline}
+            support={block.support}
+            beats={'beats' in block ? block.beats : undefined}
+          >
+            <a class="scene-link text-link" href={block.link.href}>
+              {block.link.label}
+            </a>
+          </SectorScene>
+        ),
+      )
     }
-    <div class="track-end" aria-hidden="true"></div>
   </div>
 </section>
 
@@ -59,7 +73,7 @@ import { scenes } from '../content/home';
     }
   }
 
-  /* Still mode: the stage dissolves, so the hero is its own screen and the field follows it */
+  /* Still mode: the stage dissolves, so the hero is its own screen and the sky follows it */
   .stage {
     display: contents;
   }
@@ -72,13 +86,12 @@ import { scenes } from '../content/home';
     pointer-events: none;
   }
 
-  .hero-spacer {
-    height: 0;
+  .track :global(.model-panel) {
+    pointer-events: auto;
   }
 
-  /* The last scene's copy scrolls away before the stage does, so the field never slides under it */
-  :global(.motion-ok) .track-end {
-    height: 60svh;
+  .hero-spacer {
+    height: 0;
   }
 
   /* Animated mode: one sticky stage */
@@ -99,7 +112,7 @@ import { scenes } from '../content/home';
   .motion-toggle {
     position: absolute;
     right: var(--margin);
-    bottom: 16px;
+    bottom: 12px;
     z-index: 4;
   }
 
@@ -107,8 +120,14 @@ import { scenes } from '../content/home';
     display: none;
   }
 
-  /* Only offered once the field, which moves on its own, is on screen */
+  /* Only offered once the sky, which moves on its own, is on screen */
   .story:not(:global(.is-past-hero)) .motion-toggle {
     visibility: hidden;
+  }
+
+  @media (max-width: 767px) {
+    .motion-toggle {
+      bottom: calc(6px + env(safe-area-inset-bottom));
+    }
   }
 </style>

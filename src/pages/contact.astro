@@ -1,61 +1,73 @@
 ---
 import Base from '../layouts/Base.astro';
-import Button from '../components/Button.astro';
 import PageHero from '../components/PageHero.astro';
 import Icon from '../components/Icon.astro';
-import type { IconName } from '../components/icon-paths';
 import { contact as copy } from '../content/pages';
-import { site, mailto } from '../config/site';
+import { site } from '../config/site';
 
-const icons: Record<string, IconName> = {
-  delivery: 'package',
-  drako: 'flag',
-  shows: 'sparkle',
-  engineering: 'model',
-  press: 'message',
-};
+const mailto = (subject: string) => `mailto:${site.email}?subject=${encodeURIComponent(subject)}`;
 ---
 
 <Base title={copy.meta.title} description={copy.meta.description}>
   <PageHero eyebrow={copy.hero.eyebrow} title={copy.hero.title} lead={copy.hero.lead}>
-    <Button slot="actions" href={mailto()} size="lg">Email {site.email}</Button>
+    <p slot="actions" class="direct">
+      Or write to <a class="text-link" href={`mailto:${site.email}`}>{site.email}</a>
+    </p>
   </PageHero>
 
-  <section class="section section--rule" aria-label="Topics">
+  <section class="section section--rule topics-section" aria-label="What to talk about">
     <div class="frame">
-      <ul class="topics">
+      <ul class="topics" data-topics>
         {
           copy.topics.map((topic) => (
-            <li class="topic" id={topic.id}>
+            <li class="topic" id={`topic-${topic.id}`} data-topic={topic.id}>
               <span class="topic-icon">
-                <Icon name={icons[topic.id] ?? 'message'} size={24} />
+                <Icon name={topic.icon} size={24} />
               </span>
               <span class="topic-body">
                 <span class="topic-title">{topic.title}</span>
                 <span class="topic-text">{topic.text}</span>
               </span>
               <a class="topic-link button button--secondary button--sm" href={mailto(topic.subject)}>
-                Write to us
-                <span class="visually-hidden"> about {topic.title.toLowerCase()}</span>
+                {copy.action}
+                <span class="visually-hidden"> about {topic.title}</span>
               </a>
             </li>
           ))
         }
       </ul>
-      <p class="direct">
-        {copy.direct} <a class="text-link" href={mailto()}>{site.email}</a>. We’re in {site.locality}, {site.region}.
-      </p>
     </div>
   </section>
 </Base>
 
+<script>
+  // Pages link here with ?topic=drako and so on: mark that topic and bring it into view.
+  const topic = new URLSearchParams(location.search).get('topic');
+  const row = topic ? document.querySelector<HTMLElement>(`[data-topic="${CSS.escape(topic)}"]`) : null;
+  if (row) {
+    row.classList.add('is-picked');
+    const link = row.querySelector<HTMLAnchorElement>('a');
+    link?.classList.replace('button--secondary', 'button--primary');
+    row.scrollIntoView({ block: 'center' });
+  }
+</script>
+
 <style>
+  .direct {
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .topics-section {
+    padding-top: 0;
+    border-top: 0;
+  }
+
   .topics {
-    display: grid;
     margin: 0;
     padding: 0;
     list-style: none;
-    border-top: 1px solid var(--hairline);
+    border-top: 1px solid var(--hairline-strong);
   }
 
   .topic {
@@ -63,16 +75,12 @@ const icons: Record<string, IconName> = {
     grid-template-columns: auto minmax(0, 1fr);
     gap: 16px 20px;
     align-items: center;
-    padding: 24px 0;
+    padding: 22px 0;
     border-bottom: 1px solid var(--hairline);
     scroll-margin-top: calc(var(--nav-h) + 24px);
   }
 
-  .topic:target {
-    background: linear-gradient(90deg, rgb(var(--amber-rgb) / 0.08), transparent 60%);
-  }
-
-  @media (min-width: 760px) {
+  @media (min-width: 720px) {
     .topic {
       grid-template-columns: auto minmax(0, 1fr) auto;
     }
@@ -86,7 +94,7 @@ const icons: Record<string, IconName> = {
     color: var(--color-glacier);
     background: var(--night-raised);
     border: 1px solid var(--hairline-strong);
-    border-radius: 10px;
+    border-radius: 50%;
   }
 
   .topic-body {
@@ -95,13 +103,14 @@ const icons: Record<string, IconName> = {
   }
 
   .topic-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 1.5rem + 0.8vw, 2.25rem);
-    line-height: 1.05;
+    font-weight: 500;
+    font-size: 1.1875rem;
+    color: var(--color-ash);
   }
 
   .topic-text {
-    color: rgb(232 230 225 / 0.74);
+    font-size: 1rem;
+    color: rgb(232 230 225 / 0.7);
   }
 
   .topic-link {
@@ -109,14 +118,17 @@ const icons: Record<string, IconName> = {
     justify-self: start;
   }
 
-  @media (min-width: 760px) {
+  @media (min-width: 720px) {
     .topic-link {
       grid-column: 3;
     }
   }
 
-  .direct {
-    margin-top: 40px;
-    color: rgb(232 230 225 / 0.8);
+  .topic:global(.is-picked) {
+    border-bottom-color: var(--hairline-strong);
+  }
+
+  .topic:global(.is-picked) .topic-icon {
+    border-color: var(--color-glacier);
   }
 </style>

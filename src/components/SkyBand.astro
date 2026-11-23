@@ -1,21 +1,21 @@
 ---
 /**
- * The live subsurface field as a full-bleed band, for inner page heroes.
+ * The live sky as a full-bleed band, for inner page heroes.
  * Hidden from assistive technology; the page tells the same story in text.
  */
-import type { FieldScene } from '../scripts/field';
+import type { SkyScene } from '../scripts/sky';
 
 interface Props {
-  scenes: FieldScene[];
+  scenes: SkyScene[];
   interval?: number;
   ground?: number;
   caption?: string;
 }
 
-const { scenes, interval = 7500, ground = 0.18, caption } = Astro.props;
+const { scenes, interval = 8000, ground = 0.86, caption } = Astro.props;
 ---
 
-<figure class="band" data-field-band data-scenes={scenes.join(',')} data-interval={interval} data-ground={ground}>
+<figure class="band" data-sky-band data-scenes={scenes.join(',')} data-interval={interval} data-ground={ground}>
   <canvas aria-hidden="true"></canvas>
   {caption && <figcaption class="visually-hidden">{caption}</figcaption>}
   <button class="band-toggle button button--secondary button--sm" type="button" data-motion-toggle hidden>Pause motion</button>
@@ -29,7 +29,7 @@ const { scenes, interval = 7500, ground = 0.18, caption } = Astro.props;
 <style>
   .band {
     position: relative;
-    height: clamp(340px, 58svh, 640px);
+    height: clamp(360px, 60svh, 660px);
     margin: 0;
     border-block: 1px solid var(--hairline);
     background: var(--color-obsidian);
@@ -47,11 +47,10 @@ const { scenes, interval = 7500, ground = 0.18, caption } = Astro.props;
   .band-toggle {
     position: absolute;
     right: var(--margin);
-    bottom: 16px;
+    bottom: 12px;
   }
 
   .band-toggle[hidden] {
     display: none;
   }
-
 </style>

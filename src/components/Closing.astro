@@ -1,9 +1,10 @@
 ---
 /**
- * The last scene of the home page: one action, and who it is for.
+ * The closing scene: one action, and where we come from.
  */
 import Button from './Button.astro';
 import { closing } from '../content/home';
+import { site } from '../config/site';
 ---
 
 <section class="closing" id={closing.id} aria-labelledby="closing-title">
@@ -11,10 +12,10 @@ import { closing } from '../content/home';
     <h2 class="closing-title" id="closing-title">{closing.headline}</h2>
     <p class="closing-support">{closing.support}</p>
     <div class="closing-cta">
-      <Button href="/contact" size="lg">{closing.cta}</Button>
+      <Button href={site.contactUrl} size="lg" data-cta="closing">{closing.cta}</Button>
     </div>
-    <ul class="audiences" aria-label="Who we work with">
-      {closing.audiences.map((audience) => <li>{audience}</li>)}
+    <ul class="creds" aria-label="About BBD">
+      {closing.credentials.map((credential) => <li>{credential}</li>)}
     </ul>
   </div>
 </section>
@@ -35,12 +36,12 @@ import { closing } from '../content/home';
   .closing-title {
     font-size: var(--t-hero);
     line-height: 0.95;
-    max-width: 8em;
+    max-width: 9em;
   }
 
   .closing-support {
     margin-top: 24px;
-    max-width: 40ch;
+    max-width: 38ch;
     font-size: var(--t-lead);
     color: rgb(232 230 225 / 0.8);
   }
@@ -49,7 +50,7 @@ import { closing } from '../content/home';
     margin-top: 32px;
   }
 
-  .audiences {
+  .creds {
     display: grid;
     gap: 8px;
     margin: 64px 0 0;
@@ -60,18 +61,18 @@ import { closing } from '../content/home';
   }
 
   @media (min-width: 1024px) {
-    .audiences {
+    .creds {
       display: flex;
       flex-wrap: wrap;
       gap: 0;
     }
 
-    .audiences li {
+    .creds li {
       padding-inline: 24px;
       border-left: 1px solid var(--hairline-strong);
     }
 
-    .audiences li:first-child {
+    .creds li:first-child {
       padding-left: 0;
       border-left: 0;
     }

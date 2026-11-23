@@ -1,13 +1,13 @@
 ---
 /**
- * Every industry, technology and product page, from one Topic record.
- * The story runs in a fixed order: the need today, why this approach wins
- * (a chart and three reasons), how it works, where it stands, what BBD is
+ * Every mission and technology page, from one Topic record.
+ * The story runs in a fixed order: the need today in numbers, why the BBD approach
+ * wins (a chart and three reasons), how it works, where things stand, what BBD is
  * building, and where to go next. Every number cites a numbered source.
  */
 import Base from './Base.astro';
 import Button from '../components/Button.astro';
-import FieldBand from '../components/FieldBand.astro';
+import SkyBand from '../components/SkyBand.astro';
 import Logo from '../components/Logo.astro';
 import SectionHead from '../components/SectionHead.astro';
 import CtaBand from '../components/CtaBand.astro';
@@ -18,6 +18,8 @@ import Points from '../components/topic/Points.astro';
 import Flow from '../components/topic/Flow.astro';
 import Stage from '../components/topic/Stage.astro';
 import TopicCards from '../components/topic/TopicCards.astro';
+import Specialists from '../components/topic/Specialists.astro';
+import Compare from '../components/topic/Compare.astro';
 import SourceList from '../components/topic/SourceList.astro';
 import type { Topic } from '../content/topics/types';
 import { breadcrumbFor } from '../content/topics';
@@ -87,7 +89,7 @@ const breadcrumbLd = {
           </div>
         </div>
       ) : (
-        <FieldBand scenes={hero.visual.band} caption={hero.caption} />
+        <SkyBand scenes={hero.visual.band} caption={hero.caption} />
       )
     }
   </section>
@@ -101,10 +103,21 @@ const breadcrumbLd = {
 
   {
     topic.children && (
-      <section class="section section--rule" aria-labelledby="missions">
+      <section class="section section--rule" aria-labelledby={topic.children.id ?? 'children'}>
         <div class="frame stack-lg">
-          <SectionHead id="missions" title={topic.children.title} intro={topic.children.intro} />
+          <SectionHead id={topic.children.id ?? 'children'} title={topic.children.title} intro={topic.children.intro} />
           <TopicCards slugs={topic.children.slugs} />
+        </div>
+      </section>
+    )
+  }
+
+  {
+    topic.specialists && (
+      <section class="section section--rule" aria-labelledby={topic.specialists.id}>
+        <div class="frame stack-lg">
+          <SectionHead id={topic.specialists.id} title={topic.specialists.title} intro={topic.specialists.intro} />
+          <Specialists items={topic.specialists.items} />
         </div>
       </section>
     )
@@ -117,6 +130,17 @@ const breadcrumbLd = {
       <Points points={topic.why.points} refs={refs} />
     </div>
   </section>
+
+  {
+    topic.compare && (
+      <section class="section section--rule" aria-labelledby={topic.compare.id}>
+        <div class="frame stack-lg">
+          <SectionHead id={topic.compare.id} title={topic.compare.title} intro={topic.compare.intro} />
+          <Compare columns={topic.compare.columns} rows={topic.compare.rows} />
+        </div>
+      </section>
+    )
+  }
 
   <section class="section section--rule" aria-labelledby="how-it-works">
     <div class="frame stack-lg">
@@ -139,7 +163,7 @@ const breadcrumbLd = {
   <section class="section section--deep bbd" aria-labelledby="bbd-title">
     <div class="frame bbd-grid">
       <div>
-        <Logo size={28} class="bbd-mark" />
+        <Logo size={26} class="bbd-mark" />
         <h2 class="bbd-title" id="bbd-title">{topic.bbd.title}</h2>
         <p class="bbd-text">{topic.bbd.text}</p>
       </div>

@@ -1,5 +1,5 @@
 /**
- * One switch for all continuous motion on a page (the live field and the drawn scenes).
+ * One switch for all continuous motion on a page (the sky, the bands and the drawn scenes).
  * State lives on <html data-motion="paused"> so CSS animations can follow it too.
  */
 export const isPaused = () => document.documentElement.dataset.motion === 'paused';

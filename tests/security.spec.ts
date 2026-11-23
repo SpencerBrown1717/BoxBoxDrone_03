@@ -1,14 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { inlineScripts, policyScriptSources } from '../scripts/csp-hashes.mjs';
 
 /**
- * Site safety: the security headers from vercel.json (served locally by scripts/serve-dist.mjs),
- * a script policy with no 'unsafe-inline', and nothing loaded from other origins.
+ * The security headers from vercel.json (served locally by scripts/serve-dist.mjs), a script
+ * policy with no 'unsafe-inline', and nothing loaded from other origins.
  * scripts/check-security-headers.sh checks the same headers on a live deployment.
  */
 
+const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+
 test('every response carries the security headers', async ({ request }) => {
-  for (const path of ['/', '/delivery', '/drako', '/contact', '/not-a-page', '/favicon.svg']) {
+  for (const path of ['/', '/drako', '/models', '/contact', '/not-a-page', '/favicon.svg', '/llms.txt']) {
     const headers = (await request.get(path)).headers();
     expect(headers['strict-transport-security'], path).toBe('max-age=63072000; includeSubDomains; preload');
     expect(headers['x-content-type-options'], path).toBe('nosniff');
@@ -49,7 +52,7 @@ test('pages load nothing from other origins and break no policy', async ({ page,
     Object.defineProperty(window, '__violations', { value: seen });
     document.addEventListener('securitypolicyviolation', (e) => seen.push(`${e.effectiveDirective} ${e.blockedURI}`));
   });
-  for (const path of ['/', '/delivery', '/wam', '/drako', '/shows', '/models', '/why-now', '/company', '/contact']) {
+  for (const path of ['/', '/delivery', '/drako', '/shows', '/models', '/hardware', '/why-america', '/company', '/contact']) {
     await page.goto(path);
     await page.evaluate(async () => {
       for (let y = 0; y <= document.documentElement.scrollHeight; y += innerHeight) {
@@ -60,4 +63,10 @@ test('pages load nothing from other origins and break no policy', async ({ page,
     expect(await page.evaluate(() => (window as unknown as { __violations: string[] }).__violations), path).toEqual([]);
   }
   expect(outside).toEqual([]);
+});
+
+test('redirects stay on this site', () => {
+  for (const rule of vercel.redirects) {
+    expect(rule.destination, rule.source).toMatch(/^\/[a-z0-9/#?=-]*$/);
+  }
 });

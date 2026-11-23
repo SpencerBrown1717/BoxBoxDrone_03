@@ -50,10 +50,10 @@ for (const [deviceName, options] of Object.entries(devices)) {
   }
 
   // Menus.
-  await page.goto(base + '/delivery', { waitUntil: 'networkidle' });
+  await page.goto(base + '/drako', { waitUntil: 'networkidle' });
   await page.waitForTimeout(400);
   if (deviceName === 'desktop') {
-    for (const label of ['Products', 'Technology']) {
+    for (const label of ['Missions', 'Technology']) {
       await page.getByRole('button', { name: label, exact: true }).click();
       await page.waitForTimeout(450);
       await page.screenshot({ path: `${out}/${deviceName}-mega-${label.toLowerCase()}.png` });
@@ -64,9 +64,9 @@ for (const [deviceName, options] of Object.entries(devices)) {
     await page.getByRole('button', { name: /menu/i }).click();
     await page.waitForTimeout(450);
     await page.screenshot({ path: `${out}/${deviceName}-menu.png` });
-    await page.getByRole('button', { name: 'Products', exact: true }).click();
+    await page.getByRole('button', { name: 'Missions', exact: true }).click();
     await page.waitForTimeout(450);
-    await page.screenshot({ path: `${out}/${deviceName}-menu-products.png`, fullPage: true });
+    await page.screenshot({ path: `${out}/${deviceName}-menu-missions.png`, fullPage: true });
   }
 
   report[`${deviceName}/errors`] = errors;

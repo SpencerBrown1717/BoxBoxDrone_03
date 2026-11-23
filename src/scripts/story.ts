@@ -1,20 +1,23 @@
 /**
  * Orchestrates the home page story.
  *
- * The barrier choreography runs on native scroll-driven animations (a ViewTimeline
+ * The cost line choreography runs on native scroll-driven animations (a ViewTimeline
  * on the hero spacer), so it stays on the compositor. Browsers without them get the
  * same Web Animations, scrubbed from a scroll listener. With reduced motion, nothing
  * here animates: the page shows finished frames.
+ *
+ * The line falls to the floor and stays there as the horizon. The sky fills with
+ * drones above it, and each scene below plays as its copy scrolls by.
  */
-import { createField, type FieldScene } from './field';
-import { fieldLabels } from '../content/home';
+import { createSky, type SkyScene } from './sky';
+import { skyLabels } from '../content/home';
 import { onMotionChange, wireToggle } from './motion';
 
 type Range = [number, number];
 
 const DURATION = 1000;
-const LANDED = 0.6; // the barrier reaches the floor
-const BELOW = 0.7; // the camera starts going below the surface
+const LANDED = 0.6; // the line reaches the floor
+const BELOW = 0.7; // the hero gives way to the sky
 const A: Range = [0, LANDED];
 const B: Range = [LANDED, BELOW];
 const C: Range = [BELOW, 1];
@@ -26,23 +29,23 @@ if (story) start(story);
 
 function start(story: HTMLElement) {
   const stage = story.querySelector<HTMLElement>('[data-stage]');
-  const fieldWrap = story.querySelector<HTMLElement>('[data-field]');
-  const canvas = story.querySelector<HTMLCanvasElement>('[data-field-canvas]');
+  const skyWrap = story.querySelector<HTMLElement>('[data-sky]');
+  const canvas = story.querySelector<HTMLCanvasElement>('[data-sky-canvas]');
   const spacer = story.querySelector<HTMLElement>('[data-hero-spacer]');
   const toggle = story.querySelector<HTMLButtonElement>('[data-motion-toggle]');
-  if (!stage || !fieldWrap || !canvas || !spacer) return;
+  if (!stage || !skyWrap || !canvas || !spacer) return;
 
   // The head script picked the mode before first paint; follow it so the layout never switches
   const reduced = !document.documentElement.classList.contains('motion-ok');
   matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => location.reload());
 
-  let field: ReturnType<typeof createField>;
+  let sky: ReturnType<typeof createSky>;
   try {
-    field = createField(canvas, { reducedMotion: reduced, labels: fieldLabels });
+    sky = createSky(canvas, { reducedMotion: reduced, labels: skyLabels });
   } catch {
     return;
   }
-  field.setClearSources([...story.querySelectorAll<HTMLElement>('[data-clear]')]);
+  sky.setClearSources([...story.querySelectorAll<HTMLElement>('[data-clear]')]);
 
   const animated = !reduced;
 
@@ -52,29 +55,20 @@ function start(story: HTMLElement) {
   const navHeight = () => header?.offsetHeight ?? 64;
   const floorGap = () => parseFloat(getComputedStyle(story).getPropertyValue('--floor-gap')) || 64;
 
-  /** The ground line sits just below the tallest scene copy, so copy never covers the field. */
-  function groundFor(height: number) {
-    let tallest = 0;
-    story.querySelectorAll<HTMLElement>('.scene-copy-inner').forEach((el) => {
-      tallest = Math.max(tallest, el.offsetHeight);
-    });
-    const below = navHeight() + 28 + tallest + 40;
-    return Math.round(Math.min(Math.max(below, height * 0.34), height * 0.62));
-  }
-
   let size = { w: 0, h: 0, ground: 0 };
 
   function measure() {
-    const w = fieldWrap!.clientWidth;
-    const h = fieldWrap!.clientHeight;
-    const ground = groundFor(h);
+    const w = skyWrap!.clientWidth;
+    const h = skyWrap!.clientHeight;
+    // The horizon is where the line lands
+    const ground = Math.round(h - floorGap());
     if (w === size.w && h === size.h && ground === size.ground) return false;
     size = { w, h, ground };
-    field.layout(w, h, ground);
+    sky.layout(w, h, ground);
     return true;
   }
 
-  // ---- Barrier choreography -------------------------------------------------
+  // ---- Cost line choreography -------------------------------------------------
 
   const ViewTimelineCtor = (window as unknown as { ViewTimeline?: new (o: object) => AnimationTimeline }).ViewTimeline;
   let animations: Animation[] = [];
@@ -102,7 +96,6 @@ function start(story: HTMLElement) {
     const W = stage!.clientWidth;
     const yTop = navHeight() + 10;
     const yFloor = H - floorGap();
-    const delta = Math.max(0, yFloor - size.ground);
     const timeline = ViewTimelineCtor ? new ViewTimelineCtor({ subject: spacer, axis: 'block' }) : null;
 
     const ty = (y: number) => `translate3d(0, ${y.toFixed(1)}px, 0)`;
@@ -132,14 +125,14 @@ function start(story: HTMLElement) {
     const now = $('[data-layer="now"]');
     const then = $('[data-layer="then"]');
 
-    // A: the barrier sweeps down. Above it is now, below it is still then.
+    // A: the cost line sweeps down. Above it is now, below it is still then.
     add($('[data-bar]'), [{ transform: ty(yTop) }, { transform: ty(yFloor) }], A, settle);
     add(now, [{ transform: ty(yTop - H) }, { transform: ty(yFloor - H) }], A, settle);
     add(now?.querySelector('[data-layer-inner]') ?? null, [{ transform: ty(H - yTop) }, { transform: ty(H - yFloor) }], A, settle);
     add(then, [{ transform: ty(yTop) }, { transform: ty(yFloor) }], A, settle);
     add(then?.querySelector('[data-layer-inner]') ?? null, [{ transform: ty(-yTop) }, { transform: ty(-yFloor) }], A, settle);
 
-    // Its glow softens as it falls, then goes out as it cools
+    // Its glow softens as it falls, then goes out as it becomes the horizon
     add(
       $('[data-bar-glow]'),
       [
@@ -151,7 +144,7 @@ function start(story: HTMLElement) {
       [0, 0.92],
     );
 
-    // B: it lands, and the first signal runs out along it
+    // B: it lands, and the first flight runs out along it
     const half = W / 2;
     const spark = (to: number): Keyframe[] => [
       { transform: tx(0), opacity: 0 },
@@ -162,10 +155,8 @@ function start(story: HTMLElement) {
     add($('[data-spark="left"]'), spark(-half), B, 'cubic-bezier(0.25, 0.6, 0.35, 1)');
     add($('[data-spark="right"]'), spark(half), B, 'cubic-bezier(0.25, 0.6, 0.35, 1)');
 
-    // C: the view drops below the horizon. The line rises with the page to the ground line
-    // and cools while the field fades in beneath it, in lockstep.
-    add($('[data-hero-group]'), [{ transform: ty(0) }, { transform: ty(-delta) }], C);
-    add(fieldWrap, [{ transform: ty(delta), opacity: 0 }, { opacity: 1, offset: 0.5 }, { transform: ty(0), opacity: 1 }], C);
+    // C: the hero gives way to the sky. The line cools into the horizon while the drones fade in above it.
+    add(skyWrap, [{ opacity: 0 }, { opacity: 1, offset: 0.5 }, { opacity: 1 }], C);
     add(now, [{ opacity: 1 }, { opacity: 0 }], [BELOW, 0.88]);
     add(then, [{ opacity: 1 }, { opacity: 0 }], [BELOW, 0.88]);
     add(now, [{ visibility: 'visible' }, { visibility: 'hidden' }], [0.88, 0.9]);
@@ -175,12 +166,12 @@ function start(story: HTMLElement) {
     if (!timeline) scrub(progress());
   }
 
-  // ---- Field activity and scenes ---------------------------------------------
+  // ---- Sky activity and scenes -------------------------------------------------
 
   let storyInView = false;
   let pastHero = !animated;
 
-  const updateActive = () => field.setActive(storyInView && pastHero);
+  const updateActive = () => sky.setActive(storyInView && pastHero);
 
   new IntersectionObserver(([entry]) => {
     storyInView = entry.isIntersecting;
@@ -191,7 +182,7 @@ function start(story: HTMLElement) {
     (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          field.setScene((entry.target as HTMLElement).dataset.observe as FieldScene);
+          sky.setScene((entry.target as HTMLElement).dataset.observe as SkyScene);
         }
       }
     },
@@ -229,7 +220,7 @@ function start(story: HTMLElement) {
   // ---- Pause control for continuous motion -----------------------------------
 
   if (animated) wireToggle(toggle);
-  onMotionChange((paused) => field.setPaused(paused));
+  onMotionChange((paused) => sky.setPaused(paused));
 
   // ---- Layout -----------------------------------------------------------------
 
@@ -245,7 +236,7 @@ function start(story: HTMLElement) {
     });
   };
 
-  new ResizeObserver(relayout).observe(animated ? stage : fieldWrap);
+  new ResizeObserver(relayout).observe(animated ? stage : skyWrap);
   document.fonts?.ready.then(relayout);
   relayout();
 }

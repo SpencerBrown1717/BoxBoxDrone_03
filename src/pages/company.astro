@@ -9,17 +9,16 @@ import Roadmap from '../components/Roadmap.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Logo from '../components/Logo.astro';
 import { company as copy } from '../content/pages';
-import { site } from '../config/site';
 ---
 
 <Base title={copy.meta.title} description={copy.meta.description}>
   <PageHero eyebrow={copy.hero.eyebrow} title={copy.hero.title} lead={copy.hero.lead} layout="split">
     <Fragment slot="actions">
       <Button href="/contact" size="lg">Talk to us</Button>
-      <Button href="/why-now" variant="secondary" size="lg">Why now</Button>
+      <Button href="/why-america" variant="secondary" size="lg">Why America</Button>
     </Fragment>
     <div slot="side" class="mark-plate" aria-hidden="true">
-      <Logo size={128} />
+      <Logo size={132} />
     </div>
   </PageHero>
 
@@ -32,7 +31,7 @@ import { site } from '../config/site';
 
   <section class="section section--deep">
     <div class="frame">
-      <Statement title={copy.beliefs.title} text={copy.beliefs.text} facts={copy.beliefs.items} note={`${site.legalName} is based in ${site.locality}, ${site.region}.`} />
+      <Statement title={copy.why.title} text={copy.why.text} facts={copy.why.facts} />
     </div>
   </section>
 
@@ -50,7 +49,7 @@ import { site } from '../config/site';
     aspect-ratio: 4 / 3;
     width: 100%;
     color: var(--color-white);
-    background: var(--glass), var(--color-graphite);
+    background: var(--color-graphite);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-surface);
   }

@@ -4,8 +4,8 @@
  * job, thin marks, hairline grids, a legend for two or more series with direct
  * labels too, a hover and focus layer, and a table view of every number.
  *
- * Color by role: glacier is the signal (BBD's own model and flights), ash the highlight for anything
- * else, and two grays carry classical and context. Text never wears series color.
+ * Color by role: glacier is the flight signal, ash the highlight for anything
+ * else, and two grays carry other and context. Text never wears series color.
  *
  * Text lives in HTML over the plot, so it stays legible at any width; lines are
  * drawn in a stretched SVG with non-scaling strokes.
@@ -279,7 +279,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
                   data-tip={`${group.count} of ${chart.groups.reduce((s, g) => s + g.count, 0)}|${group.label}`}
                   aria-label={`${group.label}: ${group.count} of ${chart.groups.reduce((s, g) => s + g.count, 0)} ${chart.noun}`}
                 >
-                  <Icon name="derrick" size={30} />
+                  <Icon name="drone" size={30} />
                 </span>
               ))}
             </div>
@@ -490,22 +490,22 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     overflow-clip-margin: 6px;
     --surface: var(--color-obsidian);
     --grid: rgb(232 230 225 / 0.08);
-    --quantum: var(--color-glacier);
+    --signal: var(--color-glacier);
     --highlight: var(--color-ash);
-    --classical: var(--color-pumice);
+    --other: var(--color-pumice);
     --context: #5c5966;
   }
 
-  .tone-quantum {
-    --tone: var(--quantum);
+  .tone-signal {
+    --tone: var(--signal);
   }
 
   .tone-highlight {
     --tone: var(--highlight);
   }
 
-  .tone-classical {
-    --tone: var(--classical);
+  .tone-other {
+    --tone: var(--other);
   }
 
   .tone-context {
@@ -553,7 +553,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
   .axis-name {
     margin-top: 18px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     color: var(--color-pumice);
   }
 
@@ -611,7 +611,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
   .x-tick {
     position: absolute;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     font-variant-numeric: tabular-nums;
     color: var(--color-pumice);
     white-space: nowrap;
@@ -653,7 +653,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     /* Size to the text, not to the space left before the plot's edge */
     width: max-content;
     max-width: 22ch;
-    font-size: 0.8125rem;
+    font-size: var(--t-micro);
     line-height: 1.35;
     color: rgb(232 230 225 / 0.82);
     pointer-events: none;
@@ -695,7 +695,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     translate: calc(-100% - 6px) calc(-100% - 6px);
     text-align: right;
     color: var(--color-pumice);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     text-shadow:
       0 0 3px var(--surface),
       0 0 6px var(--surface),
@@ -760,7 +760,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
 
   .bar-fill {
     flex: none;
-    width: max(4px, calc((100% - 4.5rem) * var(--w)));
+    width: max(4px, calc((100% - 8.5rem) * var(--w)));
     height: 20px;
     border-radius: 0 4px 4px 0;
     background: var(--tone);
@@ -768,6 +768,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
   }
 
   .bar-value {
+    white-space: nowrap;
     font-weight: 600;
     font-size: 0.9375rem;
     color: var(--color-ash);
@@ -775,7 +776,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
 
   .bars-unit {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     color: var(--color-pumice);
   }
 
@@ -870,7 +871,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     top: 0;
     translate: -50% 0;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     color: var(--color-pumice);
     white-space: nowrap;
   }
@@ -977,14 +978,14 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
   }
 
   .segment-text {
-    font-size: 0.8125rem;
+    font-size: var(--t-micro);
     font-weight: 600;
     white-space: nowrap;
     color: #fff;
   }
 
   .segment.tone-highlight .segment-text,
-  .segment.tone-classical .segment-text {
+  .segment.tone-other .segment-text {
     color: var(--color-obsidian);
   }
 
@@ -1063,7 +1064,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     top: 4px;
     translate: -50% 0;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     color: var(--color-pumice);
     white-space: nowrap;
   }
@@ -1105,7 +1106,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
   }
 
   .marker-label {
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
     color: rgb(232 230 225 / 0.85);
     white-space: nowrap;
   }
@@ -1169,7 +1170,7 @@ const note = chart.illustrative ? ' Modeled to show the shape, not measured data
     gap: 2px;
     max-width: 260px;
     padding: 9px 12px;
-    font-size: 0.8125rem;
+    font-size: var(--t-micro);
     line-height: 1.4;
     color: var(--color-pumice);
     background: var(--color-graphite);

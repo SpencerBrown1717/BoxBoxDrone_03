@@ -33,15 +33,16 @@ const atEl = (sel, frac = 0.2) => page.evaluate(([s, f]) => {
 }, [sel, frac]);
 
 const scenes = [
-  ['05-delivery', await atEl('#delivery', 0.3)],
-  ['06-model', await atEl('#model', 0.3)],
-  ['07-drako', await atEl('#drako', 0.3)],
-  ['08-shows', await atEl('#shows', 0.3)],
-  ['09-models', await atEl('#models', 0.3)],
-  ['10-why-now', await atEl('#why-now', 0.15)],
-  ['11-why-now-pillars', await atEl('#why-now', 0.75)],
-  ['12-roadmap', await atEl('#roadmap', 0.3)],
-  ['13-talk', await atEl('#talk', 0.4)],
+  ['05-sky', await atEl('#sky', 0.3)],
+  ['06-model', await atEl('#model', 0.45)],
+  ['07-delivery', await atEl('#delivery', 0.2)],
+  ['08-weather', await atEl('#delivery', 0.7)],
+  ['09-drako', await atEl('#drako', 0.3)],
+  ['10-shows', await atEl('#shows', 0.3)],
+  ['11-fleet', await atEl('#fleet', 0.3)],
+  ['12-gap', await atEl('#gap', 0.4)],
+  ['13-roadmap', await atEl('#roadmap', 0.3)],
+  ['14-talk', await atEl('#talk', 0.4)],
 ];
 const shots = reduce === 'reduce'
   ? [['00-top', 0], ...scenes]
@@ -57,7 +58,7 @@ const shots = reduce === 'reduce'
 
 for (const [name, y] of shots) {
   await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), Math.max(0, Math.round(y)));
-  await page.waitForTimeout(name.match(/delivery|model|drako|shows/) ? 3200 : 900);
+  await page.waitForTimeout(name.match(/delivery|weather|drako|shows|fleet|model/) ? 3200 : 900);
   await page.screenshot({ path: `${out}/${name}.png` });
 }
 console.log(JSON.stringify({ spacer, errors }, null, 1));

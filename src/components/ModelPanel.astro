@@ -1,0 +1,279 @@
+---
+/**
+ * The model: an instrument plate that scrolls over the dimmed sky, with a live
+ * illustration of how a world action model plans. Pick a world, add wind, rain
+ * or night, and watch the drone imagine its moves and fly the best one.
+ * Without script the plate shows the copy and the spec sheet only.
+ */
+import Button from './Button.astro';
+import { model } from '../content/home';
+---
+
+<article class="model" id={model.id} data-scene="model" data-observe="model">
+  <div class="model-panel" data-model-panel>
+    <div class="model-grid">
+      <div class="model-copy" data-clear>
+        <h2 class="model-title">{model.headline}</h2>
+        <p class="model-support">{model.support}</p>
+      </div>
+
+      <div class="model-demo">
+        <figure class="planner" data-planner hidden>
+          <canvas class="planner-canvas" data-planner-canvas aria-hidden="true"></canvas>
+          <figcaption class="visually-hidden">{model.demo.description}</figcaption>
+        </figure>
+        <div class="planner-controls" data-planner-controls hidden>
+          <div class="seg" role="radiogroup" aria-label={model.demo.label}>
+            {
+              model.demo.worlds.map((world, i) => (
+                <button class="seg-option" type="button" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-world={world.id}>
+                  {world.label}
+                </button>
+              ))
+            }
+          </div>
+          <div class="conditions" role="group" aria-label="Conditions">
+            {
+              model.demo.conditions.map((condition) => (
+                <button class="condition" type="button" aria-pressed="false" data-condition={condition.id}>
+                  {condition.label}
+                </button>
+              ))
+            }
+          </div>
+          <p class="planner-note">{model.demo.note}</p>
+        </div>
+      </div>
+
+      <dl class="specs">
+        {
+          model.specs.map((spec) => (
+            <div class="spec">
+              <dt>{spec.term}</dt>
+              <dd>{spec.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="model-cta">
+        <Button href={model.cta.href} size="lg" data-cta="model">{model.cta.label}</Button>
+      </div>
+    </div>
+  </div>
+</article>
+
+<script>
+  import { mountPlanner } from '../scripts/planner';
+  const panel = document.querySelector<HTMLElement>('[data-model-panel]');
+  if (panel) mountPlanner(panel);
+</script>
+
+<style>
+  .model {
+    position: relative;
+    padding-block: 40svh 30svh;
+  }
+
+  .model-panel {
+    position: relative;
+    background: var(--color-graphite);
+    border-block: 1px solid var(--hairline-strong);
+    padding-block: clamp(56px, 8vw, 112px);
+  }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'copy'
+      'demo'
+      'specs'
+      'cta';
+    row-gap: 40px;
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+  }
+
+  .model-copy {
+    grid-area: copy;
+  }
+
+  .model-demo {
+    grid-area: demo;
+    min-width: 0;
+  }
+
+  .specs {
+    grid-area: specs;
+    margin: 0;
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .model-cta {
+    grid-area: cta;
+  }
+
+  @media (min-width: 900px) {
+    .model-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 1fr) minmax(0, 5fr);
+      grid-template-areas:
+        'demo . copy'
+        'demo . specs'
+        'demo . cta';
+      grid-template-rows: auto auto 1fr;
+      row-gap: 40px;
+      align-items: start;
+    }
+
+    .model-demo {
+      align-self: center;
+    }
+  }
+
+  .model-title {
+    font-size: var(--t-display);
+    color: var(--color-ash);
+    max-width: 8em;
+  }
+
+  .model-support {
+    margin-top: 24px;
+    max-width: 38ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .planner {
+    margin: 0;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-surface);
+    overflow: hidden;
+    background: var(--color-obsidian);
+  }
+
+  .planner[hidden],
+  .planner-controls[hidden] {
+    display: none;
+  }
+
+  .planner-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1.6;
+  }
+
+  .planner-controls {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 14px;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .seg-option,
+  .condition {
+    min-height: 40px;
+    padding: 0 14px;
+    font: 500 0.9375rem/1 var(--font-sans);
+    color: rgb(232 230 225 / 0.78);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  @media (max-width: 767px) {
+    .seg-option,
+    .condition {
+      min-height: 44px;
+    }
+  }
+
+  /* Five worlds don't fit one row on a phone: an even grid instead of a stray last chip */
+  @media (max-width: 559px) {
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .seg-option {
+      padding-inline: 8px;
+    }
+  }
+
+  .seg-option:hover,
+  .condition:hover {
+    color: var(--color-ash);
+  }
+
+  .seg-option[aria-checked='true'] {
+    color: var(--iris-ink);
+    background: var(--color-ash);
+  }
+
+  .conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .condition {
+    border-color: var(--button-outline);
+  }
+
+  .condition[aria-pressed='true'] {
+    color: var(--color-ash);
+    border-color: var(--color-glacier);
+    background: rgb(var(--glacier-rgb) / 0.08);
+  }
+
+  .condition[aria-pressed='true']::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    vertical-align: 0.12em;
+    background: var(--color-glacier);
+    border-radius: 50%;
+  }
+
+  .planner-note {
+    font-size: var(--t-micro);
+    color: var(--color-pumice);
+  }
+
+  .spec {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding-block: 16px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .spec dt {
+    font-size: var(--t-small);
+    color: var(--color-pumice);
+  }
+
+  .spec dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-small);
+    color: var(--color-ash);
+    text-align: right;
+  }
+</style>

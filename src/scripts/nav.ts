@@ -153,7 +153,7 @@ if (header) {
   });
 
   list.addEventListener('click', (event) => {
-    if ((event.target as Element).closest('.tab-link, .menu-preorder a') && isOpen(list)) list.hidePopover();
+    if ((event.target as Element).closest('.tab-link, .menu-cta a') && isOpen(list)) list.hidePopover();
   });
 
   const observer = new ResizeObserver(sync);

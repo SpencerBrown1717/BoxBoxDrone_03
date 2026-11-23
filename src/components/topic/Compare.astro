@@ -1,0 +1,119 @@
+---
+/**
+ * Side by side: where the field is today against what BBD is building.
+ * A real table on every screen; on phones each row stacks its two answers.
+ */
+interface Props {
+  columns: [string, string];
+  rows: { label: string; field: string; bbd: string }[];
+}
+
+const { columns, rows } = Astro.props;
+---
+
+<table class="compare">
+  <thead>
+    <tr>
+      <td></td>
+      <th scope="col">{columns[0]}</th>
+      <th scope="col" class="compare-bbd">{columns[1]}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {
+      rows.map((row) => (
+        <tr>
+          <th scope="row">{row.label}</th>
+          <td data-label={columns[0]}>{row.field}</td>
+          <td data-label={columns[1]} class="compare-bbd">
+            {row.bbd}
+          </td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>
+
+<style>
+  .compare {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1px solid var(--hairline-strong);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .compare thead th {
+    padding: 16px 16px 16px 0;
+    font-weight: 500;
+    font-size: var(--t-small);
+    color: var(--color-pumice);
+    text-align: left;
+  }
+
+  .compare thead .compare-bbd {
+    color: var(--color-amber);
+  }
+
+  .compare tbody tr {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .compare tbody th {
+    width: 18%;
+    padding: 18px 16px 18px 0;
+    font-weight: 500;
+    color: var(--color-ash);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .compare tbody td {
+    padding: 18px 16px 18px 0;
+    color: rgb(232 230 225 / 0.62);
+    vertical-align: top;
+  }
+
+  .compare tbody td.compare-bbd {
+    color: var(--color-ash);
+  }
+
+  .compare tbody td.compare-bbd::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    vertical-align: 0.1em;
+    background: var(--color-glacier);
+    transform: rotate(45deg);
+  }
+
+  @media (max-width: 699px) {
+    .compare thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    .compare tbody tr {
+      display: grid;
+      gap: 6px;
+      padding: 16px 0;
+    }
+
+    .compare tbody th,
+    .compare tbody td {
+      width: auto;
+      padding: 0;
+    }
+
+    .compare tbody td::after {
+      content: ' (' attr(data-label) ')';
+      color: var(--color-pumice);
+      font-size: var(--t-micro);
+    }
+  }
+</style>

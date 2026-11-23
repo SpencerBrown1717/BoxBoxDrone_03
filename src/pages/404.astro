@@ -1,26 +1,31 @@
 ---
 import Base from '../layouts/Base.astro';
 
-// A flight path that wanders off the map: it climbs, loops once and fades out.
+// A flight path that wanders off course and ends where the link was lost.
 const width = 800;
 const height = 140;
-const mid = height / 2;
-let d = `M 0 ${mid}`;
-for (let x = 0; x <= width; x += 2) {
-  const y = mid - 44 * Math.exp(-x / 260) * Math.sin((2 * Math.PI * x) / 210);
-  d += ` L ${x} ${y.toFixed(2)}`;
+let d = `M 0 ${height - 20}`;
+let x = 0;
+let y = height - 20;
+for (let i = 1; i <= 60; i++) {
+  x = (i / 60) * width * 0.86;
+  y = height - 20 - 70 * Math.sin((i / 60) * Math.PI * 0.9) + 14 * Math.sin(i * 0.9) * (i / 60);
+  d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
 }
+const endX = x;
+const endY = y;
 ---
 
-<Base title="Off the map | BBD" description="There's no page at this address." noindex>
+<Base title="Lost link | BoxBox Drone" description="There's no page at this address." noindex>
   <section class="lost">
     <div class="lost-inner">
       <svg class="trace" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
         <path d={d} pathLength="1"></path>
+        <path class="lost-end" d={`M ${endX.toFixed(1)} ${endY.toFixed(1)} h 0`}></path>
       </svg>
-      <h1 class="lost-title">Off the map.</h1>
-      <p class="lost-support">There's no page at this address. Check the link, or go back to the home page.</p>
-      <a class="lost-back" href="/">Back to home</a>
+      <h1 class="lost-title">Lost link.</h1>
+      <p class="lost-support">There's no page at this address. Check the link, or fly back to the home page.</p>
+      <a class="lost-back button button--secondary" href="/">Back to home</a>
     </div>
   </section>
 </Base>
@@ -52,21 +57,26 @@ for (let x = 0; x <= width; x += 2) {
     fill: none;
     stroke: var(--color-glacier);
     stroke-width: 1.5;
+    stroke-dasharray: 0.006 0.012;
     vector-effect: non-scaling-stroke;
-    filter: drop-shadow(0 0 6px rgb(110 231 249 / 0.6));
+  }
+
+  .trace .lost-end {
+    stroke: var(--color-amber);
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: none;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .trace path {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation: ring-down 2.6s var(--ease-out) 0.2s forwards;
+    .lost-end {
+      animation: blink 1.4s ease-in-out infinite;
     }
   }
 
-  @keyframes ring-down {
-    to {
-      stroke-dashoffset: 0;
+  @keyframes blink {
+    50% {
+      opacity: 0.2;
     }
   }
 
@@ -82,19 +92,6 @@ for (let x = 0; x <= width; x += 2) {
   }
 
   .lost-back {
-    display: inline-flex;
-    align-items: center;
-    height: 48px;
     margin-top: 32px;
-    padding: 0 22px;
-    color: var(--color-ash);
-    text-decoration: none;
-    border: 1px solid var(--hairline-strong);
-    border-radius: 2px;
-    transition: border-color 0.2s;
-  }
-
-  .lost-back:hover {
-    border-color: var(--color-ash);
   }
 </style>

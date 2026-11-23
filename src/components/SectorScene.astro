@@ -56,6 +56,8 @@ const { id, scene, eyebrow, headline, support, beats } = Astro.props;
     position: sticky;
     top: calc(var(--nav-h) + 28px);
     z-index: 1;
+    /* Lets each scene's copy leave before the next arrives, so two never stack */
+    margin-bottom: 22svh;
     max-width: var(--max);
     margin-inline: auto;
     padding-inline: var(--margin);

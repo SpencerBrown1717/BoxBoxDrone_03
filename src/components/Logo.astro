@@ -1,9 +1,12 @@
 ---
 /**
- * The BBD mark: a drone seen from above. A square body (the box), four arms
- * and four rotors. White on black; uses currentColor so it follows the text
- * color around it. The same paths feed scripts/make-assets.mjs.
+ * The BBD mark: a quadcopter seen from above, carrying a box. Four rotor rings,
+ * four short arms and the box at its center. White on black; uses currentColor
+ * so it follows the text color around it. The same geometry is in
+ * scripts/make-assets.mjs and public/logo.
  */
+import { markPaths } from '../lib/mark';
+
 interface Props {
   size?: number;
   class?: string;
@@ -24,11 +27,5 @@ const { size = 18, class: className, label } = Astro.props;
   aria-hidden={label ? undefined : 'true'}
   focusable="false"
 >
-  <path
-    fill-rule="evenodd"
-    d="M3 14a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM7.5 14a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0ZM47 14a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM51.5 14a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0ZM3 58a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM7.5 58a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0ZM47 58a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM51.5 58a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0Z"
-  ></path>
-  <path
-    d="M29 25H43A4 4 0 0 1 47 29V43A4 4 0 0 1 43 47H29A4 4 0 0 1 25 43V29A4 4 0 0 1 29 25ZM18.3 21.7 21.7 18.3 28.7 25.3 25.3 28.7ZM53.7 21.7 50.3 18.3 43.3 25.3 46.7 28.7ZM18.3 50.3 21.7 53.7 28.7 46.7 25.3 43.3ZM53.7 50.3 50.3 53.7 43.3 46.7 46.7 43.3Z"
-  ></path>
+  {markPaths.map((d) => <path d={d} fill-rule="evenodd" />)}
 </svg>

@@ -1,0 +1,208 @@
+---
+/**
+ * Small still versions of the sky, for the mega menus: the same horizon, drones
+ * and routes as the home page, drawn as SVG.
+ */
+import type { MiniSceneName } from '../content/nav';
+
+interface Props {
+  scene: MiniSceneName;
+  class?: string;
+}
+
+const { scene, class: className } = Astro.props;
+
+const W = 320;
+const H = 172;
+const G = 146; // the horizon
+const f = (n: number) => n.toFixed(1);
+
+function seeded(seed: number) {
+  let s = seed;
+  return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
+}
+
+// A faint plane of drones in perspective, behind every scene
+const plane: string[] = [];
+{
+  const rand = seeded(17);
+  for (let i = 0; i < 170; i++) {
+    const z = 1.2 + 8.8 * (i / 170);
+    const x = W / 2 + ((rand() * 2 - 1) * 9.8 * W * 0.56) / z;
+    const y = G - (G * 0.97) / z;
+    if (x > 2 && x < W - 2) plane.push(`M${f(x)} ${f(y)}h0`);
+  }
+}
+
+const routes: string[] = [];
+const houses: string[] = [];
+const bright: string[] = [];
+const amber: string[] = [];
+const rings: string[] = [];
+const dashed: string[] = [];
+const solid: string[] = [];
+const shapes: string[] = [];
+
+if (scene === 'delivery') {
+  const hub = 26;
+  solid.push(`M${hub} ${G}v-16M${hub - 8} ${G - 16}h16`);
+  for (const [x, w] of [
+    [168, 22],
+    [222, 26],
+    [282, 22],
+  ]) {
+    const top = G - w * 0.62;
+    houses.push(`M${x - w / 2} ${G}V${f(top)}L${x} ${f(top - w * 0.42)}L${x + w / 2} ${f(top)}V${G}`);
+    routes.push(`M${hub} ${G - 18}Q${f((hub + x) / 2)} ${f(G - 104)} ${x + w * 0.3} ${f(top - 4)}`);
+    amber.push(`M${f(x - w * 0.2)} ${f(top + 5)}h3`);
+  }
+  bright.push(`M104 ${G - 78}h0`, `M196 ${G - 66}h0`);
+  amber.push(`M104 ${G - 72}h0`, `M290 ${G - 3}h0`);
+}
+
+if (scene === 'drako') {
+  solid.push(`M14 ${G}v-8h16v8M22 ${G - 8}v-10`);
+  const rand = seeded(5);
+  for (let k = 0; k < 9; k++) {
+    const x = 150 + k * 18;
+    const y = 40 + 46 * Math.abs(Math.sin(k * 0.7)) + rand() * 10;
+    bright.push(`M${f(x)} ${f(y)}h0`);
+  }
+  rings.push(`M118 66a10 10 0 1 0 0.1 0`);
+  rings.push(`M96 92a6 6 0 1 0 0.1 0`);
+  dashed.push(`M118 66q-6 30 -14 ${f(G - 66)}`);
+  for (let x = 60; x < W; x += 34) solid.push(`M${x} ${G}v-5`);
+}
+
+if (scene === 'shows') {
+  // A small redwood of drones
+  const cx = 200;
+  const top = 18;
+  const h = 118;
+  const w = h * 0.56;
+  for (let v = 0.02; v < 1; v += 0.06) {
+    for (let u = 0.02; u < 1; u += 0.07) {
+      const dx = Math.abs(u - 0.5);
+      let inside = v > 0.8 && dx < 0.05;
+      for (let k = 0; k < 5 && !inside && v <= 0.86; k++) {
+        const t0 = k * 0.155;
+        const t1 = t0 + 0.3;
+        if (v >= t0 && v <= t1 && dx < ((v - t0) / (t1 - t0)) * (0.16 + k * 0.08)) inside = true;
+      }
+      if (!inside) continue;
+      const d = `M${f(cx + (u - 0.5) * w)} ${f(top + v * h)}h0`;
+      if (v > 0.8) amber.push(d);
+      else bright.push(d);
+    }
+  }
+  for (let k = 0; k < 14; k++) shapes.push(`M${20 + (k % 7) * 8} ${G - 3 - Math.floor(k / 7) * 6}h0`);
+}
+
+if (scene === 'model') {
+  const sx = 34;
+  const sy = 112;
+  const gx = 286;
+  const gy = 44;
+  shapes.push(`M150 20h44v36h-44Z`, `M128 96h40v30h-40Z`, `M222 84h36v28h-36Z`);
+  for (let k = -3; k <= 3; k++) {
+    if (k === 0) continue;
+    const bend = k * 26;
+    dashed.push(`M${sx} ${sy}q60 ${f(-30 + bend)} 110 ${f(-36 + bend * 1.4)}`);
+  }
+  routes.push(`M${sx} ${sy}C110 96 150 70 ${gx} ${gy}`);
+  bright.push(`M${sx} ${sy}h0`);
+  amber.push(`M${gx} ${gy - 5}l5 5-5 5-5-5Z`);
+}
+---
+
+<svg class:list={['mini', className]} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
+  <path class="plane" d={plane.join('')}></path>
+  <path class="ground" d={`M0 ${G}H${W}`}></path>
+  {shapes.length > 0 && <path class={scene === 'model' ? 'block' : 'spares'} d={shapes.join('')} />}
+  {houses.length > 0 && <path class="house" d={houses.join('')} />}
+  {routes.length > 0 && <path class={scene === 'model' ? 'chosen' : 'route'} d={routes.join('')} />}
+  {dashed.length > 0 && <path class="imagined" d={dashed.join('')} />}
+  {solid.length > 0 && <path class="mark" d={solid.join('')} />}
+  {rings.length > 0 && <path class="ring" d={rings.join('')} />}
+  {bright.length > 0 && <path class="drone" d={bright.join('')} />}
+  {amber.length > 0 && <path class="amber" d={amber.join('')} />}
+</svg>
+
+<style>
+  .mini {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+  }
+
+  .plane {
+    stroke: rgb(110 231 249 / 0.28);
+    stroke-width: 1.6;
+    stroke-linecap: square;
+  }
+
+  .ground {
+    fill: none;
+    stroke: #5a473b;
+    stroke-width: 1;
+  }
+
+  .house,
+  .mark {
+    fill: none;
+    stroke: rgb(232 230 225 / 0.55);
+    stroke-width: 1;
+  }
+
+  .route {
+    fill: none;
+    stroke: rgb(110 231 249 / 0.4);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+  }
+
+  .chosen {
+    fill: none;
+    stroke: var(--color-glacier);
+    stroke-width: 1.6;
+  }
+
+  .imagined {
+    fill: none;
+    stroke: rgb(110 231 249 / 0.3);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+
+  .block {
+    fill: rgb(232 230 225 / 0.04);
+    stroke: rgb(232 230 225 / 0.4);
+    stroke-width: 1;
+  }
+
+  .spares {
+    stroke: rgb(110 231 249 / 0.6);
+    stroke-width: 2.4;
+    stroke-linecap: square;
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--color-amber);
+    stroke-width: 1.2;
+  }
+
+  .drone {
+    stroke: var(--color-glacier);
+    stroke-width: 3.2;
+    stroke-linecap: square;
+  }
+
+  .amber {
+    fill: var(--color-amber);
+    stroke: var(--color-amber);
+    stroke-width: 3;
+    stroke-linecap: square;
+  }
+</style>

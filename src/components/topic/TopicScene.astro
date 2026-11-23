@@ -59,8 +59,7 @@ const { body, labels } = drawScene(scene);
     figure.classList.add('is-animated');
     wireToggle(figure.querySelector<HTMLButtonElement>('[data-motion-toggle]'));
 
-    // SMIL motion waits for an explicit start, so reduced motion never sees it move.
-    // A negative data-delay starts a loop part way through, so nothing waits at the origin.
+    // SMIL motion waits for an explicit start, so reduced motion never sees it move
     const smil = [...svg.querySelectorAll<SVGAnimationElement>('animate, animateMotion')];
     if (smil.length) {
       for (const anim of smil) {
@@ -93,8 +92,9 @@ const { body, labels } = drawScene(scene);
     display: none;
   }
 
-  /* Narrow: labels move out of the picture into a list */
-  @container (max-width: 639px) {
+  /* Narrow: labels move out of the picture into a list. Below this width the
+     drawing scales its 17px labels under the 14px floor. */
+  @container (max-width: 989px) {
     .scene-svg :global(.lbl),
     .scene-svg :global(.leader) {
       display: none;
@@ -108,7 +108,7 @@ const { body, labels } = drawScene(scene);
       padding: 0;
       list-style: none;
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       line-height: 1.4;
       color: var(--color-pumice);
     }
@@ -154,11 +154,6 @@ const { body, labels } = drawScene(scene);
     stroke-linejoin: round;
   }
 
-  .scene :global(.gate-text) {
-    fill: var(--color-ash);
-    font-size: 16px;
-  }
-
   .scene :global(.leader) {
     fill: none;
     stroke: rgb(139 143 152 / 0.45);
@@ -166,195 +161,282 @@ const { body, labels } = drawScene(scene);
   }
 
   .scene :global(.dots) {
-    stroke: rgb(110 231 249 / 0.3);
-    stroke-width: 2.2;
-    stroke-linecap: round;
+    stroke: rgb(110 231 249 / 0.32);
+    stroke-width: 2.6;
+    stroke-linecap: square;
   }
 
   .scene :global(.dots.soft) {
-    stroke: rgb(110 231 249 / 0.13);
+    stroke: rgb(110 231 249 / 0.16);
+    stroke-width: 1.8;
   }
 
-  .scene :global(.ground) {
+  .scene :global(.ground),
+  .scene :global(.baseline) {
     fill: none;
     stroke: var(--basalt-line);
     stroke-width: 1.5;
   }
 
-  .scene :global(.sea) {
+  .scene :global(.mark),
+  .scene :global(.house) {
     fill: none;
-    stroke: rgb(110 231 249 / 0.55);
+    stroke: rgb(232 230 225 / 0.55);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .scene :global(.tick) {
+    fill: none;
+    stroke: rgb(139 143 152 / 0.55);
     stroke-width: 1.4;
   }
 
-  .scene :global(.sea-tint) {
-    fill: rgb(14 40 58 / 0.32);
+  .scene :global(.window),
+  .scene :global(.parcel),
+  .scene :global(.door) {
+    fill: var(--color-amber);
   }
 
-  .scene :global(.field) {
+  .scene :global(.pad) {
+    fill: var(--color-glacier);
+  }
+
+  .scene :global(.route) {
     fill: none;
-    stroke: rgb(110 231 249 / 0.2);
+    stroke: rgb(110 231 249 / 0.65);
+    stroke-width: 1.6;
+    stroke-dasharray: 3 7;
+    stroke-linecap: round;
+  }
+
+  .scene :global(.route.soft) {
+    stroke: rgb(110 231 249 / 0.25);
+  }
+
+  .scene :global(.tether) {
+    stroke: rgb(232 230 225 / 0.6);
     stroke-width: 1.2;
   }
 
-  .scene :global(.field.strong),
-  .scene :global(.lattice) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.4);
-    stroke-width: 1.4;
+  .scene :global(.craft-body) {
+    fill: var(--color-ash);
   }
 
-  .scene :global(.strata) {
+  .scene :global(.craft-arm) {
+    fill: none;
+    stroke: var(--color-ash);
+    stroke-width: 2;
+  }
+
+  .scene :global(.craft-rotor) {
+    fill: none;
+    stroke: var(--color-glacier);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .scene :global(.wind) {
+    fill: none;
+    stroke: rgb(110 231 249 / 0.5);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .scene :global(.rain) {
+    fill: none;
+    stroke: rgb(232 230 225 / 0.18);
+    stroke-width: 1.2;
+  }
+
+  .scene :global(.track) {
     fill: none;
     stroke: rgb(110 231 249 / 0.22);
-    stroke-width: 1.1;
+    stroke-width: 1.2;
+    stroke-dasharray: 2 6;
   }
 
-  .scene :global(.contour) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.13);
-    stroke-width: 1.1;
-  }
-
-  .scene :global(.glow) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.14);
-    stroke-width: 7;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.hidden) {
-    fill: none;
+  .scene :global(.target) {
     stroke: var(--color-glacier);
+    stroke-width: 6;
+    stroke-linecap: square;
+  }
+
+  .scene :global(.hit) {
+    fill: none;
+    stroke: var(--color-amber);
     stroke-width: 1.8;
-    stroke-dasharray: 2 5;
-    stroke-linecap: round;
   }
 
-  .scene :global(.hull-fill),
-  .scene :global(.salt-fill) {
-    fill: rgb(var(--obsidian-rgb) / 0.6);
-  }
-
-  .scene :global(.trap-fill),
-  .scene :global(.loop-fill),
-  .scene :global(.pulse),
-  .scene :global(.block) {
-    fill: rgb(110 231 249 / 0.07);
-  }
-
-  .scene :global(.block) {
-    stroke: rgb(110 231 249 / 0.5);
+  .scene :global(.fall) {
+    fill: none;
+    stroke: rgb(242 182 107 / 0.55);
     stroke-width: 1.3;
+    stroke-dasharray: 3 6;
   }
 
-  .scene :global(.block.dim) {
-    opacity: 0.45;
+  .scene :global(.form),
+  .scene :global(.form-hi),
+  .scene :global(.form-trunk),
+  .scene :global(.spare) {
+    stroke-width: 5;
+    stroke-linecap: square;
   }
 
-  .scene :global(.signal),
-  .scene :global(.fiber) {
-    fill: none;
+  .scene :global(.form) {
     stroke: var(--color-glacier);
-    stroke-width: 2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
   }
 
-  .scene :global(.signal.dim) {
-    stroke: rgb(110 231 249 / 0.5);
+  .scene :global(.form-hi) {
+    stroke: var(--iris-violet);
   }
 
-  .scene :global(.fiber-glow) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.13);
-    stroke-width: 10;
-    stroke-linecap: round;
+  .scene :global(.form-trunk) {
+    stroke: var(--color-amber);
   }
 
-  .scene :global(.beam) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.28);
-    stroke-width: 1.4;
+  .scene :global(.spare) {
+    stroke: rgb(110 231 249 / 0.55);
+    stroke-width: 4;
   }
 
-  .scene :global(.beam.strong) {
-    stroke: rgb(110 231 249 / 0.6);
-    stroke-width: 2;
-  }
-
-  .scene :global(.craft),
-  .scene :global(.meter) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.62);
-    stroke-width: 1.5;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.craft.solid) {
-    fill: var(--color-ash);
-    stroke: none;
-  }
-
-  .scene :global(.craft.solid-dim),
-  .scene :global(.gate),
-  .scene :global(.station-box),
-  .scene :global(.node),
-  .scene :global(.instrument) {
+  .scene :global(.frame-box) {
     fill: var(--night);
     stroke: rgb(232 230 225 / 0.5);
     stroke-width: 1.4;
   }
 
-  .scene :global(.plate) {
-    fill: var(--night);
-    stroke: rgb(232 230 225 / 0.3);
-    stroke-width: 1.2;
+  .scene :global(.frame-box.dim) {
+    stroke: rgb(232 230 225 / 0.22);
   }
 
-  .scene :global(.plate-edge) {
+  .scene :global(.model-box) {
+    fill: rgb(110 231 249 / 0.05);
+    stroke: rgb(110 231 249 / 0.6);
+    stroke-width: 1.5;
+  }
+
+  .scene :global(.model-grid) {
+    stroke: var(--color-glacier);
+    stroke-width: 5;
+    stroke-linecap: square;
+  }
+
+  .scene :global(.arrow) {
     fill: none;
-    stroke: rgb(232 230 225 / 0.2);
-    stroke-width: 1.2;
+    stroke: rgb(232 230 225 / 0.5);
+    stroke-width: 1.4;
   }
 
-  .scene :global(.cell) {
-    fill: rgb(110 231 249 / 0.035);
-    stroke: rgb(232 230 225 / 0.45);
+  .scene :global(.block) {
+    fill: rgb(232 230 225 / 0.04);
+    stroke: rgb(232 230 225 / 0.42);
     stroke-width: 1.4;
+  }
+
+  .scene :global(.imagined) {
+    fill: none;
+    stroke: rgb(110 231 249 / 0.42);
+    stroke-width: 1.4;
+    stroke-dasharray: 4 6;
+  }
+
+  .scene :global(.blocked) {
+    fill: none;
+    stroke: rgb(139 143 152 / 0.55);
+    stroke-width: 1.4;
+    stroke-dasharray: 2 6;
+  }
+
+  .scene :global(.imagined-end) {
+    fill: rgb(110 231 249 / 0.6);
+  }
+
+  .scene :global(.blocked-end) {
+    fill: rgb(139 143 152 / 0.7);
+  }
+
+  .scene :global(.chosen) {
+    fill: none;
+    stroke: var(--color-glacier);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  .scene :global(.frame) {
+    fill: none;
+    stroke: rgb(232 230 225 / 0.6);
+    stroke-width: 6;
+    stroke-linecap: round;
+  }
+
+  .scene :global(.frame-plate),
+  .scene :global(.battery),
+  .scene :global(.camera) {
+    fill: var(--night);
+    stroke: rgb(232 230 225 / 0.6);
+    stroke-width: 1.5;
+  }
+
+  .scene :global(.battery-cells) {
+    stroke: rgb(232 230 225 / 0.3);
+    stroke-width: 1.4;
+    stroke-dasharray: 10 8;
+  }
+
+  .scene :global(.motor) {
+    fill: var(--night);
+    stroke: var(--color-ash);
+    stroke-width: 1.6;
+  }
+
+  .scene :global(.prop) {
+    fill: rgb(110 231 249 / 0.04);
+    stroke: rgb(110 231 249 / 0.4);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 6;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .scene :global(.explode) {
+    fill: none;
+    stroke: rgb(139 143 152 / 0.5);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 5;
+  }
+
+  .scene :global(.board) {
+    fill: rgb(110 231 249 / 0.06);
+    stroke: var(--color-glacier);
+    stroke-width: 1.5;
+  }
+
+  .scene :global(.glow-box) {
+    fill: none;
+    stroke: rgb(110 231 249 / 0.14);
+    stroke-width: 14;
   }
 
   .scene :global(.chip) {
-    fill: rgb(var(--night-rgb) / 0.7);
-    stroke: rgb(232 230 225 / 0.45);
-    stroke-width: 1.2;
+    fill: var(--color-glacier);
   }
 
-  .scene :global(.drop) {
-    fill: rgb(110 231 249 / 0.12);
-    stroke: rgb(110 231 249 / 0.5);
-  }
-
-  .scene :global(.sensor-stem) {
+  .scene :global(.lens) {
+    fill: none;
     stroke: var(--color-glacier);
-    stroke-width: 1.4;
+    stroke-width: 2;
   }
 
-  .scene :global(.sensor-tip),
-  .scene :global(.spin-tip),
-  .scene :global(.reading),
-  .scene :global(.photon),
-  .scene :global(.bar),
-  .scene :global(.plume circle) {
-    fill: var(--color-glacier);
+  .scene :global(.mass) {
+    stroke: rgb(232 230 225 / 0.55);
+    stroke-width: 7;
+    stroke-linecap: square;
   }
 
-  .scene :global(.cloud) {
-    fill: var(--color-glacier);
-    stroke: rgb(110 231 249 / 0.22);
-    stroke-width: 9;
+  .scene :global(.mass.us) {
+    stroke: var(--color-glacier);
   }
 
   .scene :global(.ping) {
@@ -366,222 +448,8 @@ const { body, labels } = drawScene(scene);
     transform-origin: center;
   }
 
-  .scene :global(.tick),
-  .scene :global(.ruler) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.5);
-    stroke-width: 1.4;
-  }
-
-  .scene :global(.err) {
-    stroke: rgb(110 231 249 / 0.45);
-    stroke-width: 1.4;
-  }
-
-  .scene :global(.station) {
-    fill: rgb(232 230 225 / 0.72);
-  }
-
-  .scene :global(.well),
-  .scene :global(.route),
-  .scene :global(.signal-cut),
-  .scene :global(.connector) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.35);
-    stroke-width: 1.3;
-    stroke-dasharray: 3 6;
-  }
-
-  .scene :global(.zone-edge) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.35);
-    stroke-width: 1.2;
-    stroke-dasharray: 5 6;
-  }
-
-  .scene :global(.hatch) {
-    stroke: rgb(232 230 225 / 0.12);
-    stroke-width: 1.2;
-  }
-
-  .scene :global(.drift),
-  .scene :global(.contact-old),
-  .scene :global(.peak-off) {
-    fill: none;
-    stroke: var(--color-pumice);
-    stroke-width: 1.6;
-    stroke-dasharray: 6 6;
-  }
-
-  .scene :global(.cone) {
-    fill: rgb(139 143 152 / 0.09);
-  }
-
-  .scene :global(.contact-new) {
-    stroke: var(--color-glacier);
-    stroke-width: 1.8;
-  }
-
-  .scene :global(.baseline),
-  .scene :global(.axis) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.18);
-    stroke-width: 1;
-  }
-
-  .scene :global(.axis-soft) {
-    stroke: rgb(232 230 225 / 0.18);
-    stroke-dasharray: 3 6;
-  }
-
-  .scene :global(.bar-hi) {
-    fill: rgb(232 230 225 / 0.82);
-  }
-
-  .scene :global(.bar-lo) {
-    fill: rgb(139 143 152 / 0.38);
-  }
-
-  .scene :global(.mc) {
-    fill: none;
-    stroke: rgb(139 143 152 / 0.26);
-    stroke-width: 1;
-  }
-
-  .scene :global(.mc-one) {
-    fill: none;
-    stroke: var(--color-ash);
-    stroke-width: 1.6;
-  }
-
-  .scene :global(.strike) {
-    stroke: rgb(232 230 225 / 0.42);
-    stroke-width: 1.2;
-    stroke-dasharray: 6 6;
-  }
-
-  .scene :global(.est-classical) {
-    fill: none;
-    stroke: var(--color-pumice);
-    stroke-width: 2;
-  }
-
-  .scene :global(.est-quantum) {
-    fill: none;
-    stroke: var(--color-glacier);
-    stroke-width: 2;
-  }
-
-  .scene :global(.est-dot) {
-    fill: var(--color-pumice);
-  }
-
-  .scene :global(.est-dot.q) {
-    fill: var(--color-glacier);
-  }
-
-  .scene :global(.mesh),
-  .scene :global(.grid) {
-    stroke: rgb(232 230 225 / 0.06);
-    stroke-width: 1;
-  }
-
-  .scene :global(.text-dashes path) {
-    stroke: var(--color-pumice);
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.records path),
-  .scene :global(.record) {
-    stroke: var(--color-glacier);
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.tag) {
-    fill: none;
-    stroke: rgb(139 143 152 / 0.6);
-    stroke-width: 1.2;
-  }
-
-  .scene :global(.raw) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.55);
-    stroke-width: 1.5;
-  }
-
-  .scene :global(.sphere) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.3);
-    stroke-width: 1.3;
-  }
-
-  .scene :global(.sphere.dim) {
-    stroke: rgb(232 230 225 / 0.15);
-  }
-
-  .scene :global(.spin-cone),
-  .scene :global(.orbit),
-  .scene :global(.entangle) {
-    fill: none;
-    stroke: rgb(110 231 249 / 0.55);
-    stroke-width: 1.5;
-    stroke-dasharray: 3 6;
-  }
-
-  .scene :global(.spin-vec) {
-    stroke: var(--color-glacier);
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.spin-origin),
-  .scene :global(.nucleus),
-  .scene :global(.atom) {
-    fill: rgb(232 230 225 / 0.85);
-  }
-
-  .scene :global(.atom-spin),
-  .scene :global(.coil-line) {
-    stroke: var(--color-glacier);
-    stroke-width: 2;
-    stroke-linecap: round;
-  }
-
-  .scene :global(.orbit-small),
-  .scene :global(.coil) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.4);
-    stroke-width: 1.3;
-  }
-
-  .scene :global(.comb) {
-    stroke: var(--color-glacier);
-    stroke-width: 1.8;
-  }
-
-  .scene :global(.rotation) {
-    fill: none;
-    stroke: rgb(232 230 225 / 0.4);
-    stroke-width: 1.3;
-    stroke-dasharray: 4 6;
-  }
-
-  .scene :global(.wire) {
-    stroke: rgb(232 230 225 / 0.35);
-    stroke-width: 1.3;
-  }
-
-  .scene :global(.node-chip) {
-    fill: rgb(110 231 249 / 0.2);
-    stroke: var(--color-glacier);
-    stroke-width: 1.5;
-  }
-
-  /* Drones in a simulated twin are drawn as ghosts of the real ones */
-  .scene :global(.ghost) {
-    opacity: 0.45;
+  .scene :global(.ping.amber) {
+    stroke: var(--color-amber);
   }
 
   /* Dots that ride SMIL paths stay hidden until their motion starts */
@@ -613,63 +481,24 @@ const { body, labels } = drawScene(scene);
 
   @keyframes scene-flow {
     to {
-      stroke-dashoffset: -36;
+      stroke-dashoffset: -40;
     }
   }
 
-  @keyframes scene-spin {
+  @keyframes scene-twinkle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes scene-sway {
     to {
       transform: rotate(360deg);
-    }
-  }
-
-  @keyframes scene-fall {
-    0% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    80% {
-      transform: translateY(360px);
-      opacity: 1;
-    }
-
-    100% {
-      transform: translateY(360px);
-      opacity: 0;
-    }
-  }
-
-  @keyframes scene-sweep {
-    0%,
-    100% {
-      transform: rotate(-2.5deg);
-    }
-
-    50% {
-      transform: rotate(2.5deg);
-    }
-  }
-
-  @keyframes scene-grow {
-    0% {
-      transform: scaleY(0.2);
-    }
-
-    55%,
-    100% {
-      transform: scaleY(1);
-    }
-  }
-
-  @keyframes scene-jiggle {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-3px);
     }
   }
 
@@ -678,28 +507,15 @@ const { body, labels } = drawScene(scene);
   }
 
   .scene.is-animated :global(.flow) {
-    stroke-dasharray: 12 6;
-    animation: scene-flow 1.4s linear infinite;
+    animation: scene-flow 1.6s linear infinite;
   }
 
-  .scene.is-animated :global(.precess) {
-    animation: scene-spin 3s linear infinite;
+  .scene.is-animated :global(.twinkle) {
+    animation: scene-twinkle 2.6s ease-in-out infinite;
   }
 
-  .scene.is-animated :global(.fall) {
-    animation: scene-fall 2.6s cubic-bezier(0.55, 0, 1, 0.45) infinite;
-  }
-
-  .scene.is-animated :global(.sweep) {
-    animation: scene-sweep 6s ease-in-out infinite;
-  }
-
-  .scene.is-animated :global(.grow) {
-    animation: scene-grow 4.5s var(--ease-out) infinite alternate;
-  }
-
-  .scene.is-animated :global(.jiggle) {
-    animation: scene-jiggle 1.8s ease-in-out infinite;
+  .scene.is-animated :global(.sway) {
+    animation: scene-sway 9s linear infinite;
   }
 
   :global(html[data-motion='paused']) .scene :global(*) {

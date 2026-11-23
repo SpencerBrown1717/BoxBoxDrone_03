@@ -1,17 +1,14 @@
 /**
- * Every topic page, the section hubs, and lookups between them.
+ * Every mission and technology page, the section hubs, and lookups between them.
  * Routes come from here: src/pages/[...slug].astro builds one page per topic.
  */
 import type { IconName } from '../../components/icon-paths';
 import type { SceneName, Section, Topic } from './types';
-import { delivery } from './delivery';
-import { drako } from './drako';
-import { shows } from './shows';
-import { wam } from './wam';
-import { models } from './models';
-import { whyNow } from './why-now';
+import { delivery, drako, shows } from './missions';
+import { hardware, models } from './technology';
+import { whyAmerica } from './america';
 
-export const topics: Topic[] = [delivery, drako, shows, wam, models, whyNow];
+export const topics: Topic[] = [delivery, drako, shows, models, hardware, whyAmerica];
 
 const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
 
@@ -30,9 +27,16 @@ export interface CardInfo {
   scene?: SceneName;
 }
 
+/** Drawn scenes for pages whose hero is the live sky band. */
+const bandScenes: Record<string, SceneName> = {
+  delivery: 'delivery',
+  drako: 'drako',
+  shows: 'shows',
+};
+
 export function cardFor(slug: string): CardInfo {
   const topic = getTopic(slug);
-  const scene = 'scene' in topic.hero.visual ? topic.hero.visual.scene : undefined;
+  const scene = 'scene' in topic.hero.visual ? topic.hero.visual.scene : bandScenes[slug];
   return { href: `/${topic.slug}`, ...topic.card, scene };
 }
 
@@ -57,45 +61,41 @@ export interface Hub {
   cta: { title: string; text: string };
 }
 
-/** Products and Technology have hub pages. Company is its own page; its hub entry only names the breadcrumb. */
 export const hubs: Record<Section, Hub> = {
-  products: {
-    label: 'Products',
-    href: '/products',
+  missions: {
+    label: 'Missions',
+    href: '/missions',
     meta: {
-      title: 'Products | BBD',
-      description: 'Last-mile delivery drones, Drako training drones and drone show software, all flown by one world action model.',
+      title: 'Missions | BoxBox Drone',
+      description: 'Last-mile delivery, Drako training targets and drone shows, all flown by the BBD world action model.',
     },
-    title: 'One model, three ways to fly.',
-    lead: 'Delivery for the last mile, Drako training drones for counter-drone ranges, and a suite for drone light shows.',
-    groups: [{ title: 'Products', slugs: ['delivery', 'drako', 'shows'] }],
-    cta: { title: 'Tell us what you need to fly.', text: 'Delivery pilots, Drako exercises and shows.' },
+    title: 'Three missions, one model.',
+    lead: 'Last-mile delivery, Drako targets for counter-drone training, and drone shows. One model flies them all, and every flight makes it better.',
+    groups: [{ title: 'Missions', slugs: ['delivery', 'drako', 'shows'] }],
+    cta: { title: 'Tell us your mission.', text: 'Ranges, restaurants, stores, cities and events.' },
   },
   technology: {
     label: 'Technology',
     href: '/technology',
     meta: {
-      title: 'Technology | BBD',
-      description: 'BBD’s world action model, trained for every environment, and the specialists built on top of it.',
+      title: 'Technology | BoxBox Drone',
+      description: 'A world action model for drones, trained for every environment, on hardware that costs next to nothing.',
     },
-    title: 'AI models for drones.',
-    lead: 'A world action model trained for every environment, and a specialist for each job.',
-    groups: [
-      { title: 'Technology', slugs: ['wam', 'models'] },
-      { title: 'Why it matters', slugs: ['why-now'] },
-    ],
-    cta: { title: 'Talk to the team.', text: 'Research partnerships, pilots and questions about the model.' },
+    title: 'The model is the product.',
+    lead: 'A world action model trained for every environment and specialized by mission, flying aircraft that cost next to nothing.',
+    groups: [{ title: 'Technology', slugs: ['models', 'hardware'] }],
+    cta: { title: 'Fly our model.', text: 'Airframe makers, operators and research labs: talk to us about early access.' },
   },
   company: {
     label: 'Company',
     href: '/company',
     meta: {
-      title: 'About BBD',
-      description: 'BBD builds AI models for drones in Palo Alto, California.',
+      title: 'About BoxBox Drone',
+      description: 'BoxBox Drone builds AI models for drones in Palo Alto, California.',
     },
-    title: 'AI models for drones.',
-    lead: 'BBD builds AI models for drones in Palo Alto, California.',
-    groups: [{ title: 'Company', slugs: ['why-now'] }],
-    cta: { title: 'Talk to us.', text: 'Partners, press and careers.' },
+    title: 'AI models for drones, built in Palo Alto.',
+    lead: 'Why we exist, where we are going and how to reach us.',
+    groups: [{ title: 'Company', slugs: ['why-america'] }],
+    cta: { title: 'Talk to us.', text: 'Partnerships, press, investors and careers.' },
   },
 };
