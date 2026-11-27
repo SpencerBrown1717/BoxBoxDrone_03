@@ -98,5 +98,6 @@ export const tabs: NavTab[] = [
 /** Plain links after the menus */
 export const links = [
   { label: 'Why America', href: '/why-america' },
+  { label: 'Newsroom', href: '/news' },
   { label: 'Company', href: '/company' },
 ];

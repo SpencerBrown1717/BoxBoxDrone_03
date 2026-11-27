@@ -47,6 +47,7 @@ export const GET: APIRoute = () => {
     '## Company',
     '',
     `- [Why America](${url('/why-america')}): the drone gap, in sourced numbers`,
+    `- [Newsroom](${url('/news')}): three sourced stories a week on autonomy, missions and the drone industry`,
     `- [About](${url('/company')}): who we are and where we are going`,
     `- [Contact](${url('/contact')}): ${site.email}`,
     '',
