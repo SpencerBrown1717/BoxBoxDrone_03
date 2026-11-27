@@ -1,0 +1,88 @@
+---
+/**
+ * The latest stories from the newsroom, optionally for one category.
+ */
+import StoryCard from './StoryCard.astro';
+import { getStories, categories, type Category } from '../lib/news';
+
+interface Props {
+  category?: Category;
+  title?: string;
+  count?: number;
+  /** Show each story's summary. The home page lists titles only. */
+  deks?: boolean;
+}
+
+const { category, title: wanted = 'From the newsroom', count = 3, deks = true } = Astro.props;
+// The section's own stories first, then the newest from the rest, so the row is always full.
+const own = category ? await getStories(category) : [];
+const ownIds = new Set(own.map((s) => s.id));
+const rest = (await getStories()).filter((s) => !ownIds.has(s.id));
+const stories = [...own, ...rest].slice(0, count);
+const title = own.length >= count || !category ? wanted : 'From the newsroom';
+const allHref = category && own.length > 0 ? `/news/${category}` : '/news';
+const allLabel = category && own.length > 0 ? (categories.find((c) => c.id === category)?.all ?? 'All stories') : 'All stories';
+---
+
+{
+  stories.length > 0 && (
+    <section class="strip" aria-labelledby="strip-title">
+      <div class="strip-inner">
+        <div class="strip-head">
+          <h2 class="strip-title" id="strip-title">
+            {title}
+          </h2>
+          <a class="text-link strip-all" href={allHref}>
+            {allLabel}
+          </a>
+        </div>
+        <div class="strip-grid">
+          {stories.map((story) => (
+            <StoryCard story={story} size="row" showDek={deks} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .strip {
+    padding-block: clamp(80px, 11vw, 144px);
+  }
+
+  .strip-inner {
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+  }
+
+  .strip-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .strip-title {
+    font-size: var(--t-title);
+  }
+
+  .strip-all {
+    font-size: 0.9375rem;
+  }
+
+  .strip-grid {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 900px) {
+    .strip-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gutter);
+    }
+  }
+</style>

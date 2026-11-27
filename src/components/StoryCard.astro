@@ -1,0 +1,89 @@
+---
+import { categoryLabel, formatDate, isoDate, storyHref, type Story } from '../lib/news';
+
+interface Props {
+  story: Story;
+  size?: 'lead' | 'row' | 'compact';
+  /** Show the one-line summary under the title. */
+  showDek?: boolean;
+}
+
+const { story, size = 'row', showDek = true } = Astro.props;
+const { title, dek, date, category } = story.data;
+---
+
+<article class:list={['story', `story--${size}`]}>
+  <p class="story-meta">
+    <span class="story-category">{categoryLabel(category)}</span>
+    <time datetime={isoDate(date)}>{formatDate(date)}</time>
+  </p>
+  <h3 class="story-title">
+    <a href={storyHref(story)}>{title}</a>
+  </h3>
+  {size !== 'compact' && showDek && <p class="story-dek">{dek}</p>}
+</article>
+
+<style>
+  .story {
+    position: relative;
+    padding-top: 22px;
+    border-top: 1px solid var(--hairline-strong);
+  }
+
+  .story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: var(--t-micro);
+    color: var(--color-pumice);
+  }
+
+  .story-category {
+    color: var(--color-amber);
+    font-weight: 500;
+  }
+
+  .story-title {
+    margin-top: 12px;
+    font-size: clamp(1.625rem, 1.4rem + 0.8vw, 2.125rem);
+    line-height: 1.06;
+  }
+
+  .story-title a {
+    color: var(--color-ash);
+    text-decoration: none;
+  }
+
+  /* The whole card is the link target */
+  .story-title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .story:hover .story-title a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+  }
+
+  .story-dek {
+    margin-top: 12px;
+    max-width: 52ch;
+    color: rgb(232 230 225 / 0.74);
+  }
+
+  .story--lead .story-title {
+    font-size: clamp(2.25rem, 1.6rem + 2.6vw, 4rem);
+    line-height: 1;
+    max-width: 18em;
+  }
+
+  .story--lead .story-dek {
+    font-size: var(--t-lead);
+  }
+
+  .story--compact .story-title {
+    font-size: 1.5rem;
+  }
+</style>
