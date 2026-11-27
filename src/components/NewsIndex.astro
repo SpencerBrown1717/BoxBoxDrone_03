@@ -1,0 +1,208 @@
+---
+/**
+ * The newsroom front page, for all stories or one section.
+ */
+import StoryCard from './StoryCard.astro';
+import MiniScene from './MiniScene.astro';
+import { categories, categoryLabel, categoryScene, getStories, type Category } from '../lib/news';
+
+interface Props {
+  category?: Category;
+}
+
+const { category } = Astro.props;
+const stories = await getStories(category);
+const [lead, ...rest] = stories;
+const sections = [{ id: undefined, label: 'All stories', href: '/news' }, ...categories.map((c) => ({ id: c.id, label: c.label, href: `/news/${c.id}` }))];
+const intro = category
+  ? categories.find((c) => c.id === category)?.description
+  : 'Three sourced stories a week on autonomy, missions and the drone industry.';
+---
+
+<section class="news">
+  <div class="news-inner">
+    <header class="news-head">
+      <p class="news-eyebrow">{category ? 'Newsroom' : 'BoxBox Drone'}</p>
+      <h1 class="news-title">{category ? categoryLabel(category) : 'Newsroom'}</h1>
+      <p class="news-intro">{intro}</p>
+    </header>
+
+    <nav class="news-tabs" aria-label="Newsroom sections">
+      <ul>
+        {
+          sections.map((section) => (
+            <li>
+              <a href={section.href} aria-current={section.id === category ? 'page' : undefined}>
+                {section.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="news-rss" href="/news/rss.xml">RSS feed</a>
+    </nav>
+
+    {
+      lead ? (
+        <div class="news-body">
+          <div class="news-lead">
+            <StoryCard story={lead} size="lead" />
+            <a class="news-plate" href={`/news/${lead.id}`} tabindex="-1" aria-hidden="true">
+              <MiniScene scene={categoryScene[lead.data.category]} />
+            </a>
+          </div>
+          {rest.length > 0 && (
+            <div class="news-grid">
+              {rest.map((story) => (
+                <StoryCard story={story} />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <p class="news-empty">The first story in this section lands with next week's edition.</p>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .news {
+    padding-top: calc(var(--nav-h) + clamp(56px, 9vw, 120px));
+    padding-bottom: clamp(96px, 12vw, 160px);
+  }
+
+  .news-inner {
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-inline: var(--margin);
+  }
+
+  .news-eyebrow {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-amber);
+  }
+
+  .news-title {
+    margin-top: 18px;
+    font-size: clamp(3.1rem, 1.9rem + 5.6vw, 8rem);
+    line-height: 0.94;
+  }
+
+  .news-intro {
+    margin-top: 22px;
+    max-width: 40ch;
+    font-size: var(--t-lead);
+    color: rgb(232 230 225 / 0.8);
+  }
+
+  .news-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 56px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--hairline-strong);
+  }
+
+  .news-tabs ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .news-tabs ul a {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 0.9375rem;
+    color: rgb(232 230 225 / 0.78);
+    text-decoration: none;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .news-tabs ul a:hover {
+    color: var(--color-ash);
+    border-color: var(--hairline-strong);
+  }
+
+  .news-tabs ul a[aria-current='page'] {
+    color: var(--color-obsidian);
+    background: var(--color-ash);
+    border-color: var(--color-ash);
+  }
+
+  .news-rss {
+    font-size: 0.875rem;
+    color: var(--color-pumice);
+  }
+
+  .news-body {
+    margin-top: 48px;
+  }
+
+  .news-lead :global(.story) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .news-plate {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .news-lead {
+      display: grid;
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      align-items: end;
+      gap: clamp(48px, 6vw, 112px);
+    }
+
+    .news-plate {
+      display: block;
+      padding: 24px;
+      background: var(--color-graphite);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-surface);
+    }
+
+    .news-plate:hover {
+      border-color: var(--hairline-strong);
+    }
+
+    .news-plate :global(svg) {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .news-grid {
+    display: grid;
+    gap: 44px;
+    margin-top: clamp(56px, 7vw, 88px);
+  }
+
+  @media (min-width: 900px) {
+    .news-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 56px var(--gutter);
+    }
+  }
+
+  .news-empty {
+    margin-top: 48px;
+    color: var(--color-pumice);
+  }
+</style>

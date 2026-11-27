@@ -1,0 +1,12 @@
+---
+import Base from '../../layouts/Base.astro';
+import NewsIndex from '../../components/NewsIndex.astro';
+---
+
+<Base
+  title="Newsroom | BoxBox Drone"
+  description="Three sourced stories a week on autonomy, missions and the drone industry, from BoxBox Drone."
+>
+  <link slot="head" rel="alternate" type="application/rss+xml" title="BoxBox Drone Newsroom" href="/news/rss.xml" />
+  <NewsIndex />
+</Base>
