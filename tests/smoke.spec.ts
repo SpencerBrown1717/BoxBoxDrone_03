@@ -107,6 +107,19 @@ test('every internal link leads to a page, and every contact topic exists', asyn
   for (const id of topicsAsked) expect(ids, `contact topic ${id}`).toContain(id);
 });
 
+test('the newsroom lists stories and opens one with sources', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('/news');
+  await expect(page.locator('h1')).toHaveText('Newsroom');
+  await expect(page.locator('a[href="/news/auterion-skyfall-german-factory-ukraine-drones"]')).toHaveCount(1);
+  await page.goto('/news/auterion-skyfall-german-factory-ukraine-drones');
+  await expect(page.locator('h1')).toHaveText('Auterion and SkyFall plan a German factory for Ukraine-bound drones');
+  const hrefs = await page.locator('.article-sources a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+  expect(hrefs.length).toBeGreaterThanOrEqual(2);
+  for (const href of hrefs) expect(href).toMatch(/^https:\/\//);
+  expect(errors).toEqual([]);
+});
+
 test('anchors from other pages land on their sections', async ({ page }) => {
   for (const href of ['/models#specialists', '/models#plan', '/models#how-it-works']) {
     await page.goto(href);
